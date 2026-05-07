@@ -1,0 +1,259 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/schemas/candidate-profile.schema.json",
+  "title": "Candidate Profile",
+  "description": "一期相亲人员资料结构化 Schema，适用于公众号采集、LLM 抽取、云数据库落库和人工校正。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profileStatus",
+    "visibilityLevel",
+    "name",
+    "gender",
+    "photosPresent",
+    "hobbies",
+    "assets",
+    "rawText",
+    "confidence",
+    "uncertainFields"
+  ],
+  "properties": {
+    "profileStatus": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "pending_review",
+        "published",
+        "frozen"
+      ],
+      "description": "资料状态。draft 为初始导入，pending_review 为待人工核验，published 为可对外使用，frozen 为停用。"
+    },
+    "visibilityLevel": {
+      "type": "string",
+      "enum": [
+        "text_only",
+        "partial",
+        "full"
+      ],
+      "description": "默认可见级别。text_only 表示未授权用户仅可看文字，partial 表示看部分完整信息，full 表示完整资料。"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 50
+    },
+    "gender": {
+      "type": "string",
+      "enum": [
+        "男",
+        "女",
+        "未知"
+      ]
+    },
+    "zodiac": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 16
+    },
+    "age": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 18,
+      "maximum": 80
+    },
+    "heightCm": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 100,
+      "maximum": 230
+    },
+    "weightKg": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 25,
+      "maximum": 200
+    },
+    "education": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 64
+    },
+    "personality": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 300
+    },
+    "hobbies": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 32
+      },
+      "maxItems": 20
+    },
+    "religion": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 32
+    },
+    "ancestralHome": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 64
+    },
+    "occupation": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 64
+    },
+    "familyBackground": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 500
+    },
+    "assets": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "house",
+        "car",
+        "other"
+      ],
+      "properties": {
+        "house": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 200
+        },
+        "car": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 200
+        },
+        "other": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 300
+        }
+      }
+    },
+    "currentAddress": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 100
+    },
+    "matchRequirements": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 500
+    },
+    "phone": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 32,
+      "description": "敏感信息，落库后仅授权用户可见。"
+    },
+    "photosPresent": {
+      "type": "boolean"
+    },
+    "photoAssetIds": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 100
+      },
+      "maxItems": 20
+    },
+    "sourceSummary": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 300
+    },
+    "rawText": {
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 20000
+    },
+    "confidence": {
+      "type": "object",
+      "description": "字段级抽取置信度，范围 0 到 1。",
+      "required": [
+        "overall"
+      ],
+      "additionalProperties": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1
+      },
+      "properties": {
+        "overall": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    },
+    "uncertainFields": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "name",
+          "gender",
+          "zodiac",
+          "age",
+          "heightCm",
+          "weightKg",
+          "education",
+          "personality",
+          "hobbies",
+          "religion",
+          "ancestralHome",
+          "occupation",
+          "familyBackground",
+          "assets.house",
+          "assets.car",
+          "assets.other",
+          "currentAddress",
+          "matchRequirements",
+          "phone"
+        ]
+      },
+      "uniqueItems": true
+    }
+  }
+}

@@ -1,0 +1,8 @@
+node_modules/
+miniprogram_npm/
+.DS_Store
+cloudfunctions/**/node_modules/
+services/**/node_modules/
+project.private.config.json
+.env.local
+services/official-account-webhook/.env.local

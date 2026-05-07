@@ -1,0 +1,56 @@
+<view class="page-shell">
+  <view class="card" style="margin-bottom: 20rpx;">
+    <view class="section-title">授权管理</view>
+    <view class="muted">控制浏览者能看文字、照片还是完整资料。</view>
+  </view>
+
+  <view class="card" style="margin-bottom: 20rpx;">
+    <view class="form-row">
+      <text class="muted">浏览者</text>
+      <picker mode="selector" range="{{users}}" range-key="nickname" value="{{userIndex}}" bindchange="handleUserChange">
+        <view class="picker-value">{{users.length ? users[userIndex].nickname : '请选择浏览者'}}</view>
+      </picker>
+    </view>
+
+    <view class="form-row">
+      <text class="muted">候选人</text>
+      <picker mode="selector" range="{{candidates}}" range-key="name" value="{{candidateIndex}}" bindchange="handleCandidateChange">
+        <view class="picker-value">{{candidates.length ? candidates[candidateIndex].name : '请选择候选人'}}</view>
+      </picker>
+    </view>
+
+    <view class="form-row">
+      <text class="muted">权限模板</text>
+      <picker mode="selector" range="{{templates}}" value="{{templateIndex}}" bindchange="handleTemplateChange">
+        <view class="picker-value">{{templates[templateIndex]}}</view>
+      </picker>
+    </view>
+
+    <view class="form-row">
+      <text class="muted">截止日期</text>
+      <picker mode="date" value="{{expiresAt}}" bindchange="handleExpireChange">
+        <view class="picker-value">{{expiresAt}}</view>
+      </picker>
+    </view>
+
+    <view class="form-row">
+      <text class="muted">授权备注</text>
+      <input placeholder="如：推进初步了解" value="{{reason}}" bindinput="handleReasonInput" />
+    </view>
+
+    <button class="action-button" bindtap="handleGrant">保存授权</button>
+  </view>
+
+  <view class="card">
+    <view class="section-title">现有授权</view>
+    <view class="list">
+      <block wx:for="{{permissions}}" wx:key="_id">
+        <view class="permission-item">
+          <view style="font-weight:600;">{{item.viewerName}} -> {{item.candidateName}}</view>
+          <view class="muted">{{item.permissionLevel}} / 截止 {{item.expiresAt || '未设置'}}</view>
+          <view class="muted">{{item.reason || '无备注'}}</view>
+        </view>
+      </block>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,147 @@
+<view class="upload-page">
+  <view class="photo-grid">
+    <block wx:for="{{photoItems}}" wx:key="url">
+      <view class="photo-box">
+        <image class="photo-image" src="{{item.url}}" mode="aspectFill" />
+        <view class="remove-photo" data-index="{{index}}" bindtap="handleRemovePhoto">×</view>
+      </view>
+    </block>
+    <view wx:if="{{photoItems.length < 3}}" class="photo-box add-photo" bindtap="handleChooseImage">＋</view>
+  </view>
+
+  <view class="edit-card parse-card">
+    <view class="parse-action-row">
+      <view class="parse-button" bindtap="handleParseText">解析</view>
+    </view>
+    <textarea
+      class="raw-textarea"
+      placeholder="复制或填写文本自动识别填写"
+      value="{{rawText}}"
+      bindinput="handleTextInput"
+    />
+  </view>
+
+  <view class="edit-card">
+    <view class="card-head">
+      <view class="card-title">{{form.name || '会员资料'}}</view>
+      <view class="status-pill">{{mode === 'review' ? '待审核' : reviewStatus}}</view>
+    </view>
+
+    <view class="edit-grid">
+      <view class="edit-field">
+        <view class="field-label">编号</view>
+        <input class="line-input" value="{{form.name}}" data-field="name" bindinput="handleFieldInput" placeholder="请输入姓名" />
+      </view>
+      <view class="edit-field">
+        <view class="field-label">出生</view>
+        <input class="line-input" value="{{form.birthYear}}" data-field="birthYear" bindinput="handleFieldInput" placeholder="未填写" />
+      </view>
+      <view class="edit-field">
+        <view class="field-label">性别</view>
+        <picker mode="selector" range="{{pickerOptions.gender}}" data-field="gender" data-source="gender" bindchange="handlePickerChange">
+          <view class="line-input picker-value">{{form.genderDisplay}}</view>
+        </picker>
+      </view>
+      <view class="edit-field">
+        <view class="field-label">年龄</view>
+        <input class="line-input" value="{{form.age}}" data-field="age" bindinput="handleFieldInput" placeholder="未填写" />
+      </view>
+      <view class="edit-field">
+        <view class="field-label">身高</view>
+        <input class="line-input" value="{{form.heightCm}}" data-field="heightCm" bindinput="handleFieldInput" placeholder="未填写" />
+      </view>
+      <view class="edit-field">
+        <view class="field-label">体重</view>
+        <input class="line-input" value="{{form.weightKg}}" data-field="weightKg" bindinput="handleFieldInput" placeholder="未填写" />
+      </view>
+      <view class="edit-field">
+        <view class="field-label">学历</view>
+        <picker mode="selector" range="{{pickerOptions.education}}" data-field="education" data-source="education" bindchange="handlePickerChange">
+          <view class="line-input picker-value">{{form.educationDisplay}}</view>
+        </picker>
+      </view>
+      <view class="edit-field">
+        <view class="field-label">职业</view>
+        <input class="line-input" value="{{form.occupation}}" data-field="occupation" bindinput="handleFieldInput" placeholder="职业" />
+      </view>
+      <view class="edit-field">
+        <view class="field-label">祖籍</view>
+        <input class="line-input" value="{{form.ancestralHome}}" data-field="ancestralHome" bindinput="handleFieldInput" placeholder="长乐 金峰" />
+      </view>
+      <view class="edit-field">
+        <view class="field-label">宗教</view>
+        <picker mode="selector" range="{{pickerOptions.religion}}" data-field="religion" data-source="religion" bindchange="handlePickerChange">
+          <view class="line-input picker-value">{{form.religionDisplay}}</view>
+        </picker>
+      </view>
+      <view class="edit-field">
+        <view class="field-label">属相</view>
+        <picker mode="selector" range="{{pickerOptions.zodiac}}" data-field="zodiac" data-source="zodiac" bindchange="handlePickerChange">
+          <view class="line-input picker-value">{{form.zodiacDisplay}}</view>
+        </picker>
+      </view>
+    </view>
+  </view>
+
+  <view class="edit-card">
+    <view class="card-title">资料摘要</view>
+    <view class="summary-row">
+      <view class="summary-label">性格：</view>
+      <input class="summary-input" value="{{form.personality}}" data-field="personality" bindinput="handleFieldInput" placeholder="暂无性格描述" />
+    </view>
+    <view class="summary-row">
+      <view class="summary-label">家庭情况：</view>
+      <input class="summary-input" value="{{form.familyBackground}}" data-field="familyBackground" bindinput="handleFieldInput" placeholder="暂无" />
+    </view>
+    <view class="summary-row textarea-row">
+      <view class="summary-label">择偶要求：</view>
+      <textarea class="summary-textarea" value="{{form.matchRequirements}}" data-field="matchRequirements" bindinput="handleFieldInput" placeholder="暂无" />
+    </view>
+  </view>
+
+  <view class="edit-card">
+    <view class="card-title">敏感信息</view>
+    <view class="summary-row">
+      <view class="summary-label">常住地址：</view>
+      <input class="summary-input" value="{{form.currentAddress}}" data-field="currentAddress" bindinput="handleFieldInput" placeholder="暂无" />
+    </view>
+    <view class="summary-row">
+      <view class="summary-label">联系电话：</view>
+      <input class="summary-input" value="{{form.phone}}" data-field="phone" bindinput="handleFieldInput" placeholder="当前权限不可见" />
+    </view>
+    <view class="summary-row">
+      <view class="summary-label">房产情况：</view>
+      <input class="summary-input" value="{{form.assets}}" data-field="assets" bindinput="handleFieldInput" placeholder="暂无" />
+    </view>
+  </view>
+
+  <view class="edit-card">
+    <view class="tag-row">
+      <view class="summary-label">标签：</view>
+      <view class="tag-list">
+        <block wx:for="{{tagItems}}" wx:key="name">
+          <view class="{{item.className}}" data-tag="{{item.name}}" bindtap="handleTagTap">{{item.name}}</view>
+        </block>
+      </view>
+    </view>
+  </view>
+
+  <view class="edit-card">
+    <view class="submitter-title">资料提交人：</view>
+    <view class="submitter-body">
+      <image wx:if="{{submitter.avatarPreview}}" class="avatar-image small" src="{{submitter.avatarPreview}}" mode="aspectFill" />
+      <view wx:else class="avatar">{{submitter.initial}}</view>
+      <view class="submitter-info">
+        <view class="submitter-name">{{submitter.nickname || '资料提交人'}}</view>
+        <view class="submitter-phone">手机号：{{submitter.phone || '未授权'}}</view>
+      </view>
+      <view class="copy-action">复制</view>
+    </view>
+    <view class="review-hint">{{reviewHint}}</view>
+  </view>
+
+  <view class="bottom-actions">
+    <button class="reject-button" loading="{{rejectLoading}}" disabled="{{saving}}" bindtap="handleReject">↩　{{rejectButtonText}}</button>
+    <button class="save-button" loading="{{saving}}" disabled="{{saving}}" bindtap="handleSave">▣　{{saveButtonText}}</button>
+  </view>
+</view>

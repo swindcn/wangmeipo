@@ -1,0 +1,124 @@
+{
+  "version": "2.0",
+  "envId": "cloud1-d2g8yliwa5b20fae7",
+  "region": "ap-shanghai",
+  "functionRoot": "./cloudfunctions",
+  "functions": [
+    {
+      "name": "bootstrapDatabase",
+      "runtime": "Nodejs18.15",
+      "timeout": 30
+    },
+    {
+      "name": "createShareToken",
+      "runtime": "Nodejs18.15",
+      "timeout": 30
+    },
+    {
+      "name": "drainParseQueue",
+      "runtime": "Nodejs18.15",
+      "timeout": 120
+    },
+    {
+      "name": "getCandidateDetail",
+      "runtime": "Nodejs18.15",
+      "timeout": 30
+    },
+    {
+      "name": "getDashboardSummary",
+      "runtime": "Nodejs18.15",
+      "timeout": 30
+    },
+    {
+      "name": "getMatchData",
+      "runtime": "Nodejs18.15",
+      "timeout": 30
+    },
+    {
+      "name": "getPermissionData",
+      "runtime": "Nodejs18.15",
+      "timeout": 30
+    },
+    {
+      "name": "grantCandidatePermission",
+      "runtime": "Nodejs18.15",
+      "timeout": 30
+    },
+    {
+      "name": "ingestOfficialAccountMessage",
+      "runtime": "Nodejs18.15",
+      "timeout": 120
+    },
+    {
+      "name": "listMyAccess",
+      "runtime": "Nodejs18.15",
+      "timeout": 30
+    },
+    {
+      "name": "listReviewQueue",
+      "runtime": "Nodejs18.15",
+      "timeout": 30
+    },
+    {
+      "name": "recordMatch",
+      "runtime": "Nodejs18.15",
+      "timeout": 30
+    },
+    {
+      "name": "reviewParsedCandidate",
+      "runtime": "Nodejs18.15",
+      "timeout": 30
+    },
+    {
+      "name": "submitCandidateProfile",
+      "runtime": "Nodejs18.15",
+      "timeout": 60
+    },
+    {
+      "name": "parseCandidateText",
+      "runtime": "Nodejs18.15",
+      "timeout": 60,
+      "envVariables": {
+        "LLM_PROVIDER": "{{env.LLM_PROVIDER}}",
+        "MIMO_API_KEY": "{{env.MIMO_API_KEY}}",
+        "MIMO_LLM_MODEL": "{{env.MIMO_LLM_MODEL}}",
+        "MIMO_BASE_URL": "{{env.MIMO_BASE_URL}}",
+        "ARK_API_KEY": "{{env.ARK_API_KEY}}",
+        "ARK_LLM_MODEL": "{{env.ARK_LLM_MODEL}}",
+        "ARK_BASE_URL": "{{env.ARK_BASE_URL}}",
+        "OPENAI_API_KEY": "{{env.OPENAI_API_KEY}}",
+        "OPENAI_LLM_MODEL": "{{env.OPENAI_LLM_MODEL}}",
+        "OPENAI_BASE_URL": "{{env.OPENAI_BASE_URL}}",
+        "LLM_REQUEST_TIMEOUT_MS": "{{env.LLM_REQUEST_TIMEOUT_MS}}",
+        "OPENAI_REQUEST_TIMEOUT_MS": "{{env.OPENAI_REQUEST_TIMEOUT_MS}}"
+      }
+    },
+    {
+      "name": "upsertCurrentUser",
+      "runtime": "Nodejs18.15",
+      "timeout": 30
+    },
+    {
+      "name": "runParsePipeline",
+      "runtime": "Nodejs18.15",
+      "timeout": 300,
+      "envVariables": {
+        "LLM_PROVIDER": "{{env.LLM_PROVIDER}}",
+        "MIMO_API_KEY": "{{env.MIMO_API_KEY}}",
+        "MIMO_LLM_MODEL": "{{env.MIMO_LLM_MODEL}}",
+        "MIMO_BASE_URL": "{{env.MIMO_BASE_URL}}",
+        "ARK_API_KEY": "{{env.ARK_API_KEY}}",
+        "ARK_LLM_MODEL": "{{env.ARK_LLM_MODEL}}",
+        "ARK_VISION_MODEL": "{{env.ARK_VISION_MODEL}}",
+        "ARK_BASE_URL": "{{env.ARK_BASE_URL}}",
+        "OPENAI_API_KEY": "{{env.OPENAI_API_KEY}}",
+        "OPENAI_LLM_MODEL": "{{env.OPENAI_LLM_MODEL}}",
+        "OPENAI_VISION_MODEL": "{{env.OPENAI_VISION_MODEL}}",
+        "OPENAI_BASE_URL": "{{env.OPENAI_BASE_URL}}",
+        "LLM_REQUEST_TIMEOUT_MS": "{{env.LLM_REQUEST_TIMEOUT_MS}}",
+        "OPENAI_REQUEST_TIMEOUT_MS": "{{env.OPENAI_REQUEST_TIMEOUT_MS}}",
+        "PARSE_MAX_RETRY_ATTEMPTS": "{{env.PARSE_MAX_RETRY_ATTEMPTS}}"
+      }
+    }
+  ]
+}

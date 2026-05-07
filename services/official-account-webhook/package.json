@@ -1,0 +1,12 @@
+{
+  "name": "official-account-webhook",
+  "version": "0.0.1",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@cloudbase/node-sdk": "^3.8.0",
+    "fast-xml-parser": "^4.5.3"
+  }
+}

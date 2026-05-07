@@ -1,0 +1,13 @@
+{
+  "name": "wangmeipo",
+  "private": true,
+  "scripts": {
+    "check:syntax": "bash ./scripts/check-syntax.sh",
+    "deploy:functions": "bash ./scripts/deploy-cloudfunctions.sh",
+    "deploy:functions:dry-run": "bash ./scripts/deploy-cloudfunctions.sh --dry-run",
+    "deploy:webhook": "bash ./scripts/deploy-webhook.sh",
+    "deploy:webhook:dry-run": "bash ./scripts/deploy-webhook.sh --dry-run",
+    "predeploy": "bash ./scripts/predeploy.sh",
+    "predeploy:dry-run": "bash ./scripts/predeploy.sh --dry-run"
+  }
+}

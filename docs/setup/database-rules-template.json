@@ -1,0 +1,44 @@
+{
+  "users": {
+    "read": "doc.openid == auth.openid",
+    "create": "request.data.openid == auth.openid",
+    "update": "doc.openid == auth.openid",
+    "delete": "false"
+  },
+  "candidates": {
+    "read": "false",
+    "write": "false"
+  },
+  "candidate_assets": {
+    "read": "false",
+    "write": "false"
+  },
+  "raw_sources": {
+    "read": "false",
+    "write": "false"
+  },
+  "parse_tasks": {
+    "read": "false",
+    "write": "false"
+  },
+  "candidate_permissions": {
+    "read": "false",
+    "write": "false"
+  },
+  "share_tokens": {
+    "read": "false",
+    "write": "false"
+  },
+  "match_records": {
+    "read": "false",
+    "write": "false"
+  },
+  "match_logs": {
+    "read": "false",
+    "write": "false"
+  },
+  "audit_logs": {
+    "read": "false",
+    "write": "false"
+  }
+}

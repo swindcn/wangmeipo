@@ -1,0 +1,28 @@
+<view class="review-page">
+  <view class="review-tabs">
+    <block wx:for="{{tabs}}" wx:key="key">
+      <view class="{{item.className}}" data-key="{{item.key}}" bindtap="handleTabTap">{{item.label}}</view>
+    </block>
+  </view>
+
+  <view wx:if="{{loading}}" class="empty">加载中...</view>
+  <view wx:if="{{!loading && !items.length}}" class="empty">暂无资料</view>
+
+  <view wx:if="{{!loading && items.length}}" class="review-list">
+    <block wx:for="{{items}}" wx:key="_id">
+      <view class="review-row" data-id="{{item.candidateId}}" bindtap="handleOpenReview">
+        <image wx:if="{{item.photoUrl}}" class="review-photo" src="{{item.photoUrl}}" mode="aspectFill" />
+        <view wx:else class="review-photo placeholder">无图</view>
+
+        <view class="review-main">
+          <view class="submitter-name">{{item.submitterName}}</view>
+          <view class="submitter-phone">手机号：{{item.submitterPhone || '未授权'}}</view>
+          <view class="candidate-line">提交的 {{item.age || '-'}}岁{{item.genderTitle}}资料</view>
+        </view>
+
+        <view wx:if="{{activeTab === 'reviewed'}}" class="{{item.reviewStatusClass}}">{{item.reviewStatusText}}</view>
+        <view class="row-arrow">›</view>
+      </view>
+    </block>
+  </view>
+</view>

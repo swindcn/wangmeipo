@@ -1,0 +1,12 @@
+<view class="manage-page">
+  <view class="menu-list">
+    <block wx:for="{{menuItems}}" wx:key="key">
+      <view class="menu-row" data-key="{{item.key}}" bindtap="handleMenuTap">
+        <view class="{{item.iconClass}}">{{item.icon}}</view>
+        <view class="menu-label">{{item.label}}</view>
+        <view wx:if="{{item.badge}}" class="menu-badge">{{item.badge}}</view>
+        <view class="menu-arrow">›</view>
+      </view>
+    </block>
+  </view>
+</view>

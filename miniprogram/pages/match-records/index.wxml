@@ -1,0 +1,44 @@
+<view class="page-shell">
+  <view class="card" style="margin-bottom: 20rpx;">
+    <view class="section-title">匹配记录</view>
+    <view class="muted">记录推荐、互看、反馈、见面和终止状态。</view>
+  </view>
+
+  <view class="card" style="margin-bottom: 20rpx;">
+    <view class="form-row">
+      <text class="muted">候选人 A</text>
+      <picker mode="selector" range="{{candidates}}" range-key="name" value="{{leftIndex}}" bindchange="handleLeftChange">
+        <view class="picker-value">{{candidates.length ? candidates[leftIndex].name : '请选择'}}</view>
+      </picker>
+    </view>
+    <view class="form-row">
+      <text class="muted">候选人 B</text>
+      <picker mode="selector" range="{{candidates}}" range-key="name" value="{{rightIndex}}" bindchange="handleRightChange">
+        <view class="picker-value">{{candidates.length ? candidates[rightIndex].name : '请选择'}}</view>
+      </picker>
+    </view>
+    <view class="form-row">
+      <text class="muted">状态</text>
+      <picker mode="selector" range="{{statuses}}" value="{{statusIndex}}" bindchange="handleStatusChange">
+        <view class="picker-value">{{statuses[statusIndex]}}</view>
+      </picker>
+    </view>
+    <view class="form-row">
+      <text class="muted">备注</text>
+      <input placeholder="如：已安排双方互看资料" value="{{resultNote}}" bindinput="handleResultInput" />
+    </view>
+
+    <button class="action-button" bindtap="handleSave">新增匹配记录</button>
+  </view>
+
+  <view class="list">
+    <block wx:for="{{records}}" wx:key="_id">
+      <view class="card">
+        <view style="font-size: 30rpx; font-weight: 600;">{{item.leftName}} / {{item.rightName}}</view>
+        <view class="muted" style="margin-top: 8rpx;">状态：{{item.status}}</view>
+        <view class="muted" style="margin-top: 8rpx;">备注：{{item.resultNote || '暂无'}}</view>
+        <view class="muted" style="margin-top: 8rpx;">更新时间：{{item.updatedAt}}</view>
+      </view>
+    </block>
+  </view>
+</view>

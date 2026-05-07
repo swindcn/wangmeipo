@@ -1,0 +1,71 @@
+<view class="page-shell">
+  <view wx:if="{{loading}}" class="muted">加载中...</view>
+
+  <view wx:if="{{candidate}}" class="list">
+    <view class="card">
+      <view style="display:flex;justify-content:space-between;align-items:flex-start;gap:16rpx;">
+        <view>
+          <view class="section-title">{{candidate.name || '会员资料'}}</view>
+          <view class="muted">编号：{{candidate.candidateCode || '-'}}</view>
+        </view>
+        <text class="tag">{{candidate.permissionLevel}}</text>
+      </view>
+
+      <view class="grid-two">
+        <view><text class="muted">性别</text><view>{{candidate.gender || '未知'}}</view></view>
+        <view><text class="muted">年龄</text><view>{{candidate.age || '-'}}</view></view>
+        <view><text class="muted">身高</text><view>{{candidate.heightCm || '-'}} cm</view></view>
+        <view><text class="muted">体重</text><view>{{candidate.weightKg || '-'}} kg</view></view>
+        <view><text class="muted">学历</text><view>{{candidate.education || '-'}}</view></view>
+        <view><text class="muted">职业</text><view>{{candidate.occupation || '-'}}</view></view>
+        <view><text class="muted">祖籍</text><view>{{candidate.ancestralHome || '-'}}</view></view>
+        <view><text class="muted">宗教</text><view>{{candidate.religion || '-'}}</view></view>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="section-title">资料摘要</view>
+      <view style="margin-bottom: 12rpx;">性格：{{candidate.personality || '暂无性格描述'}}</view>
+      <view style="margin-bottom: 12rpx;">爱好：{{candidate.hobbies.length ? candidate.hobbies.join('、') : '暂无'}}</view>
+      <view style="margin-bottom: 12rpx;">家庭情况：{{candidate.familyBackground || '暂无'}}</view>
+      <view class="muted">择偶要求：{{candidate.matchRequirements || '暂无'}}</view>
+    </view>
+
+    <view class="card">
+      <view class="section-title">敏感信息</view>
+      <view style="margin-bottom: 12rpx;">常住地址：{{candidate.currentAddress || '暂无'}}</view>
+      <view style="margin-bottom: 12rpx;">联系电话：{{candidate.phone || '当前权限不可见'}}</view>
+      <view class="muted">照片权限：{{candidate.canViewPhotos ? '可见' : '未开放'}}</view>
+    </view>
+
+    <view class="card">
+      <view class="section-title">照片区</view>
+      <view wx:if="{{candidate.canViewPhotos && candidate.displayPhotos.length}}" class="photo-grid">
+        <block wx:for="{{candidate.displayPhotos}}" wx:key="*this">
+          <image wx:if="{{item.type === 'url'}}" class="photo-image" src="{{item.value}}" mode="aspectFill" />
+          <view wx:else class="photo-card">照片 {{item.value}}</view>
+        </block>
+      </view>
+      <view wx:else class="photo-locked">当前权限下仅可看文字资料，照片未开放。</view>
+    </view>
+
+    <view class="card" wx:if="{{candidate.profileStatus === 'pending_review'}}">
+      <view class="section-title">审核操作</view>
+      <view class="muted" style="margin-bottom: 16rpx;">当前资料仍在待校正队列。</view>
+      <button class="action-button" bindtap="handleApprove">发布该资料</button>
+    </view>
+
+    <view class="card" wx:if="{{shareToken}}">
+      <view class="section-title">分享令牌</view>
+      <view class="muted">{{shareToken}}</view>
+      <view class="muted" wx:if="{{sharePath}}" style="margin-top:12rpx;">{{sharePath}}</view>
+    </view>
+
+    <view class="action-list">
+      <button class="action-button" bindtap="handleCreateShareToken">生成分享令牌</button>
+      <button class="action-button ghost-button" open-type="share">分享到聊天</button>
+      <button class="action-button ghost-button" bindtap="handleGoPermission">去做权限配置</button>
+      <button class="action-button ghost-button" bindtap="handleGoMatch">去录入匹配记录</button>
+    </view>
+  </view>
+</view>

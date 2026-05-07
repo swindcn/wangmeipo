@@ -1,0 +1,125 @@
+<view class="home-page">
+  <view class="top-safe"></view>
+
+  <view class="home-header">
+    <view class="brand-mark" bindtap="handleBrandTap">
+      <view class="brand-seal">媒</view>
+      <view class="brand-sub">王媒婆</view>
+    </view>
+    <view class="home-title">汇匹配</view>
+  </view>
+
+  <view class="search-row">
+    <input
+      class="search-input"
+      placeholder="AI智能搜索"
+      value="{{keyword}}"
+      confirm-type="search"
+      bindinput="handleSearchInput"
+      bindconfirm="handleSearch"
+    />
+    <button class="search-button" bindtap="handleSearch">⌕</button>
+  </view>
+
+  <scroll-view
+    class="profile-scroll"
+    scroll-y
+    enhanced
+    refresher-enabled
+    refresher-triggered="{{refresherTriggered}}"
+    bindrefresherrefresh="handleScrollRefresh"
+  >
+    <view wx:if="{{loadingProfiles && !hasLoadedProfiles}}" class="home-loading">加载中...</view>
+    <view class="waterfall">
+      <view class="waterfall-column">
+        <block wx:for="{{leftProfiles}}" wx:key="_id">
+          <view class="profile-card" data-id="{{item._id}}" bindtap="handleOpenProfile">
+            <image class="profile-image" src="{{item.imageUrl}}" mode="aspectFill" lazy-load="true" webp="true" />
+            <view class="profile-overlay">
+              <text class="gender {{item.genderClass}}">{{item.genderIcon}}</text>
+              <text class="profile-age">{{item.age}}</text>
+              <view class="tag-lines">
+                <text wx:for="{{item.tags}}" wx:key="*this" class="profile-tag">{{item}}</text>
+              </view>
+            </view>
+          </view>
+        </block>
+      </view>
+
+      <view class="waterfall-column">
+        <block wx:for="{{rightProfiles}}" wx:key="_id">
+          <view class="profile-card" data-id="{{item._id}}" bindtap="handleOpenProfile">
+            <image class="profile-image" src="{{item.imageUrl}}" mode="aspectFill" lazy-load="true" webp="true" />
+            <view class="profile-overlay">
+              <text class="gender {{item.genderClass}}">{{item.genderIcon}}</text>
+              <text class="profile-age">{{item.age}}</text>
+              <view class="tag-lines">
+                <text wx:for="{{item.tags}}" wx:key="*this" class="profile-tag">{{item}}</text>
+              </view>
+            </view>
+          </view>
+        </block>
+      </view>
+    </view>
+  </scroll-view>
+
+  <view class="bottom-tabs">
+    <block wx:for="{{tabItems}}" wx:key="key">
+      <view
+        class="{{item.className}}"
+        data-key="{{item.key}}"
+        bindtap="handleTabTap"
+      >
+        <view class="tab-icon">{{item.icon}}</view>
+        <view class="tab-label">{{item.label}}</view>
+      </view>
+    </block>
+  </view>
+
+  <view wx:if="{{authModalVisible}}" class="auth-mask" bindtap="closeAuthModal">
+    <view class="auth-sheet" catchtap="stopAuthModalTap">
+      <view class="auth-title">先完成注册</view>
+      <view class="auth-desc">上传资料前需要绑定提交人账号，用于审核追踪和资料归属。</view>
+
+      <view class="auth-field-label">头像</view>
+      <view class="auth-avatar-row">
+        <button class="auth-avatar-button" open-type="chooseAvatar" bindchooseavatar="handleRegisterAvatar">
+          <image wx:if="{{registerProfile.avatarPreview}}" class="auth-avatar-image" src="{{registerProfile.avatarPreview}}" mode="aspectFill" />
+          <view wx:else class="auth-avatar-text">{{registerProfile.initial}}</view>
+        </button>
+        <view class="auth-avatar-tip">点击选择微信头像</view>
+      </view>
+
+      <view class="auth-field-label">昵称</view>
+      <view class="auth-form-row">
+        <input
+          class="auth-nickname-input"
+          type="nickname"
+          value="{{registerProfile.nickname}}"
+          bindinput="handleRegisterNickname"
+          placeholder="填写微信昵称"
+        />
+      </view>
+
+      <view class="auth-field-label">手机号</view>
+      <input
+        class="auth-phone-input"
+        type="number"
+        value="{{registerProfile.phone}}"
+        bindinput="handleRegisterPhoneInput"
+        placeholder="可手动填写手机号"
+      />
+      <button
+        class="auth-phone-button"
+        loading="{{registering}}"
+        disabled="{{registering}}"
+        open-type="getPhoneNumber"
+        bindgetphonenumber="handleRegisterPhone"
+      >
+        微信授权手机号并进入上传
+      </button>
+      <view class="auth-secondary" bindtap="handleRegisterWithoutPhone">不授权手机号，直接进入上传</view>
+      <view class="auth-cancel" bindtap="closeAuthModal">暂不上传</view>
+    </view>
+  </view>
+</view>

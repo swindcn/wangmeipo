@@ -1,0 +1,62 @@
+page {
+  background: #f6f4ef;
+  color: #2f241f;
+  font-size: 28rpx;
+}
+
+.page-shell {
+  padding: 24rpx;
+}
+
+.card {
+  background: #fffaf4;
+  border: 1rpx solid #eadfd1;
+  border-radius: 24rpx;
+  padding: 24rpx;
+  box-sizing: border-box;
+  box-shadow: 0 12rpx 36rpx rgba(111, 87, 63, 0.08);
+}
+
+.section-title {
+  font-size: 34rpx;
+  font-weight: 600;
+  margin-bottom: 20rpx;
+}
+
+.muted {
+  color: #8a7463;
+}
+
+.action-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.action-button {
+  border-radius: 20rpx;
+  background: #b96f42;
+  color: #fff;
+}
+
+.tag {
+  display: inline-block;
+  padding: 6rpx 14rpx;
+  border-radius: 999rpx;
+  background: #f1dfcb;
+  color: #7f5330;
+  margin-right: 12rpx;
+  margin-bottom: 12rpx;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.grid-two {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16rpx;
+}

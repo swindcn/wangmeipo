@@ -1,0 +1,19 @@
+.form-row {
+  margin-bottom: 20rpx;
+}
+
+.picker-value {
+  margin-top: 8rpx;
+  padding: 18rpx 20rpx;
+  border-radius: 16rpx;
+  background: #f7efe6;
+}
+
+.permission-item {
+  padding: 18rpx 0;
+  border-bottom: 1rpx solid #efe4d6;
+}
+
+.permission-item:last-child {
+  border-bottom: none;
+}

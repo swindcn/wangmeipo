@@ -1,0 +1,19 @@
+<view class="page-shell">
+  <view class="card" style="margin-bottom: 20rpx;">
+    <view class="section-title">我的可查看对象</view>
+    <view class="muted">显示当前联调身份已开放的资料范围。</view>
+  </view>
+
+  <view wx:if="{{!items.length}}" class="card muted">当前身份暂无被授权对象。</view>
+
+  <view class="list">
+    <block wx:for="{{items}}" wx:key="_id">
+      <view class="card" data-candidate-id="{{item.candidateId}}" bindtap="handleOpenDetail">
+        <view style="font-size: 30rpx; font-weight: 600;">{{item.name}}</view>
+        <view class="muted" style="margin-top: 8rpx;">职业：{{item.occupation || '暂无'}}</view>
+        <view class="muted" style="margin-top: 8rpx;">权限：{{item.permissionLevel}}</view>
+        <view class="muted" style="margin-top: 8rpx;">截止：{{item.expiresAt || '未设置'}}</view>
+      </view>
+    </block>
+  </view>
+</view>

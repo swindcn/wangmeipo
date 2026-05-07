@@ -1,0 +1,10 @@
+.form-row {
+  margin-bottom: 20rpx;
+}
+
+.picker-value {
+  margin-top: 8rpx;
+  padding: 18rpx 20rpx;
+  border-radius: 16rpx;
+  background: #f7efe6;
+}
