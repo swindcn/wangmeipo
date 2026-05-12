@@ -40,6 +40,15 @@ function validateEnv() {
   }
 }
 
+function isOfficialAccountWebhookEnabled() {
+  return Boolean(officialToken && cloudbaseEnvId)
+}
+
+function respondWebhookDisabled(res) {
+  res.writeHead(503, { "Content-Type": "text/plain; charset=utf-8" })
+  res.end("official account webhook is not enabled")
+}
+
 function validateAesEnv() {
   if (!officialAppId || !officialEncodingAesKey) {
     throw new Error("Missing AES env vars: WECHAT_OFFICIAL_ACCOUNT_APP_ID, WECHAT_OFFICIAL_ACCOUNT_ENCODING_AES_KEY")
@@ -217,7 +226,15 @@ async function processMessage(message) {
 const server = http.createServer(async (req, res) => {
   if (req.url === "/healthz") {
     res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" })
-    res.end(JSON.stringify({ ok: true }))
+    res.end(JSON.stringify({
+      ok: true,
+      officialAccountWebhookEnabled: isOfficialAccountWebhookEnabled(),
+    }))
+    return
+  }
+
+  if (!isOfficialAccountWebhookEnabled()) {
+    respondWebhookDisabled(res)
     return
   }
 
@@ -303,7 +320,9 @@ const server = http.createServer(async (req, res) => {
   }
 })
 
-validateEnv()
+if (!isOfficialAccountWebhookEnabled()) {
+  console.warn("official-account-webhook started with official account integration disabled; set WECHAT_OFFICIAL_ACCOUNT_TOKEN and CLOUDBASE_ENV_ID to enable it.")
+}
 
 server.listen(port, () => {
   console.log(`official-account-webhook listening on ${port}`)
