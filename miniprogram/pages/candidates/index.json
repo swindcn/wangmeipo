@@ -1,5 +1,6 @@
 {
   "navigationBarTitleText": "懂管理",
+  "navigationStyle": "custom",
   "navigationBarBackgroundColor": "#ffffff",
   "navigationBarTextStyle": "black"
 }

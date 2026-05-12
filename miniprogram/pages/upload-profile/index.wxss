@@ -132,8 +132,16 @@ button::after {
 
 .parse-action-row {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 14rpx;
+}
+
+.parse-title {
+  color: #2f241f;
+  font-size: 32rpx;
+  font-weight: 800;
+  line-height: 54rpx;
 }
 
 .parse-button {
@@ -223,6 +231,10 @@ button::after {
   align-items: flex-start;
 }
 
+.two-line-row {
+  align-items: flex-start;
+}
+
 .summary-textarea {
   flex: 1;
   min-width: 0;
@@ -230,6 +242,10 @@ button::after {
   color: #2f241f;
   font-size: 27rpx;
   line-height: 38rpx;
+}
+
+.summary-textarea.two-line-textarea {
+  height: 76rpx;
 }
 
 .tag-row {

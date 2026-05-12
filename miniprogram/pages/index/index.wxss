@@ -3,7 +3,9 @@ page {
 }
 
 button {
+  margin: 0;
   padding: 0;
+  min-width: 0;
   border: none;
 }
 
@@ -19,16 +21,15 @@ button::after {
 }
 
 .top-safe {
-  height: 64rpx;
   background: #f7f7f7;
 }
 
 .home-header {
-  height: 76rpx;
+  height: 58rpx;
   padding: 0 28rpx;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   border-bottom: 1rpx solid #eeeeee;
   background: #ffffff;
 }
@@ -36,37 +37,25 @@ button::after {
 .brand-mark {
   display: flex;
   align-items: center;
-  gap: 8rpx;
+  gap: 10rpx;
 }
 
-.brand-seal {
-  width: 44rpx;
-  height: 44rpx;
-  border-radius: 50%;
-  border: 3rpx solid #ef7d7d;
-  color: #d74949;
-  font-size: 22rpx;
-  font-weight: 700;
-  line-height: 44rpx;
-  text-align: center;
+.brand-logo {
+  width: 40rpx;
+  height: 40rpx;
+  display: block;
 }
 
-.brand-sub {
-  color: #c84848;
-  font-size: 18rpx;
-  font-weight: 700;
-}
-
-.home-title {
-  color: #2b2b2b;
-  font-size: 30rpx;
-  font-weight: 700;
+.brand-wordmark {
+  width: 100rpx;
+  height: 24rpx;
+  display: block;
 }
 
 .search-row {
   display: flex;
-  gap: 18rpx;
-  padding: 20rpx 24rpx 34rpx;
+  gap: 12rpx;
+  padding: 16rpx 24rpx 20rpx;
   background: #ffffff;
 }
 
@@ -82,18 +71,16 @@ button::after {
 }
 
 .search-button {
-  width: 84rpx;
+  width: 66rpx;
   height: 66rpx;
-  border-radius: 18rpx;
+  min-width: 0;
+  flex: 0 0 66rpx;
+  border-radius: 6rpx;
   background: #fb5f82;
   color: #ffffff;
-  font-size: 48rpx;
+  font-size: 34rpx;
   line-height: 66rpx;
   text-align: center;
-}
-
-.profile-scroll {
-  height: calc(100vh - 246rpx);
 }
 
 .home-loading {
@@ -135,6 +122,26 @@ button::after {
   height: 100%;
   display: block;
   background: #eeeeee;
+}
+
+.profile-image-blurred {
+  filter: blur(16rpx);
+  transform: scale(1.08);
+}
+
+.profile-photo-lock {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  padding: 10rpx 18rpx;
+  border-radius: 999rpx;
+  background: rgba(0, 0, 0, 0.5);
+  color: #ffffff;
+  font-size: 22rpx;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .profile-overlay {
@@ -218,19 +225,17 @@ button::after {
   font-weight: 700;
 }
 
-.tab-icon {
+.tab-icon-image {
+  width: 46rpx;
   height: 46rpx;
-  color: #9a9a9a;
-  font-size: 42rpx;
-  line-height: 46rpx;
+  display: block;
 }
 
 .tab-label {
   margin-top: 4rpx;
 }
 
-.tab-item.active,
-.tab-item.active .tab-icon {
+.tab-item.active {
   color: #e5798c;
 }
 
@@ -238,17 +243,12 @@ button::after {
   transform: translateY(-28rpx);
 }
 
-.tab-upload .tab-icon {
+.tab-upload .tab-icon-image {
   width: 116rpx;
   height: 116rpx;
   border-radius: 50%;
   background: #ffffff;
   border: 1rpx solid #dddddd;
-  color: #949494;
-  font-size: 72rpx;
-  font-weight: 300;
-  line-height: 104rpx;
-  text-align: center;
   box-shadow: 0 -8rpx 24rpx rgba(0, 0, 0, 0.05);
 }
 

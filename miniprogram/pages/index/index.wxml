@@ -1,12 +1,11 @@
 <view class="home-page">
-  <view class="top-safe"></view>
+  <view class="top-safe" style="height: {{headerTopGap}}rpx;"></view>
 
   <view class="home-header">
     <view class="brand-mark" bindtap="handleBrandTap">
-      <view class="brand-seal">媒</view>
-      <view class="brand-sub">王媒婆</view>
+      <image class="brand-logo" src="../../assets/icons/brand-logo.png" mode="aspectFit" />
+      <image class="brand-wordmark" src="../../assets/icons/brand-wordmark.png" mode="aspectFit" />
     </view>
-    <view class="home-title">汇匹配</view>
   </view>
 
   <view class="search-row">
@@ -23,6 +22,7 @@
 
   <scroll-view
     class="profile-scroll"
+    style="height: {{profileScrollHeight}}px;"
     scroll-y
     enhanced
     refresher-enabled
@@ -34,7 +34,8 @@
       <view class="waterfall-column">
         <block wx:for="{{leftProfiles}}" wx:key="_id">
           <view class="profile-card" data-id="{{item._id}}" bindtap="handleOpenProfile">
-            <image class="profile-image" src="{{item.imageUrl}}" mode="aspectFill" lazy-load="true" webp="true" />
+            <image class="profile-image {{item.isPrivateLocked ? 'profile-image-blurred' : ''}}" src="{{item.imageUrl}}" mode="aspectFill" lazy-load="true" webp="true" />
+            <view wx:if="{{item.isPrivateLocked}}" class="profile-photo-lock">照片未开放</view>
             <view class="profile-overlay">
               <text class="gender {{item.genderClass}}">{{item.genderIcon}}</text>
               <text class="profile-age">{{item.age}}</text>
@@ -49,7 +50,8 @@
       <view class="waterfall-column">
         <block wx:for="{{rightProfiles}}" wx:key="_id">
           <view class="profile-card" data-id="{{item._id}}" bindtap="handleOpenProfile">
-            <image class="profile-image" src="{{item.imageUrl}}" mode="aspectFill" lazy-load="true" webp="true" />
+            <image class="profile-image {{item.isPrivateLocked ? 'profile-image-blurred' : ''}}" src="{{item.imageUrl}}" mode="aspectFill" lazy-load="true" webp="true" />
+            <view wx:if="{{item.isPrivateLocked}}" class="profile-photo-lock">照片未开放</view>
             <view class="profile-overlay">
               <text class="gender {{item.genderClass}}">{{item.genderIcon}}</text>
               <text class="profile-age">{{item.age}}</text>
@@ -70,7 +72,7 @@
         data-key="{{item.key}}"
         bindtap="handleTabTap"
       >
-        <view class="tab-icon">{{item.icon}}</view>
+        <image class="tab-icon-image" src="{{item.currentIconUrl}}" mode="aspectFit" />
         <view class="tab-label">{{item.label}}</view>
       </view>
     </block>

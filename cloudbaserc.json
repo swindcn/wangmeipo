@@ -10,6 +10,18 @@
       "timeout": 30
     },
     {
+      "name": "askMatchmaker",
+      "runtime": "Nodejs18.15",
+      "timeout": 60,
+      "envVariables": {
+        "MIMO_API_KEY": "{{env.MIMO_API_KEY}}",
+        "MIMO_LLM_MODEL": "{{env.MIMO_LLM_MODEL}}",
+        "MIMO_BASE_URL": "{{env.MIMO_BASE_URL}}",
+        "LLM_REQUEST_TIMEOUT_MS": "{{env.LLM_REQUEST_TIMEOUT_MS}}",
+        "OPENAI_REQUEST_TIMEOUT_MS": "{{env.OPENAI_REQUEST_TIMEOUT_MS}}"
+      }
+    },
+    {
       "name": "createShareToken",
       "runtime": "Nodejs18.15",
       "timeout": 30
@@ -60,6 +72,26 @@
       "timeout": 30
     },
     {
+      "name": "listCandidateSubscriptions",
+      "runtime": "Nodejs18.15",
+      "timeout": 30
+    },
+    {
+      "name": "listDeletedCandidates",
+      "runtime": "Nodejs18.15",
+      "timeout": 30
+    },
+    {
+      "name": "manageAdminSettings",
+      "runtime": "Nodejs18.15",
+      "timeout": 30
+    },
+    {
+      "name": "manageViewRequests",
+      "runtime": "Nodejs18.15",
+      "timeout": 30
+    },
+    {
       "name": "recordMatch",
       "runtime": "Nodejs18.15",
       "timeout": 30
@@ -73,6 +105,11 @@
       "name": "submitCandidateProfile",
       "runtime": "Nodejs18.15",
       "timeout": 60
+    },
+    {
+      "name": "setCandidateSubscription",
+      "runtime": "Nodejs18.15",
+      "timeout": 30
     },
     {
       "name": "parseCandidateText",

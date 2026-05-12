@@ -8,8 +8,34 @@ page {
   background: #ffffff;
 }
 
+.manage-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 20rpx;
+  background: #ffffff;
+  border-bottom: 1rpx solid #eeeeee;
+  box-sizing: border-box;
+}
+
+.manage-nav-title {
+  color: #111111;
+  font-size: 30rpx;
+  font-weight: 800;
+  line-height: 42rpx;
+}
+
 .menu-list {
   background: #ffffff;
+}
+
+.manage-content {
+  box-sizing: border-box;
 }
 
 .menu-row {
@@ -23,22 +49,15 @@ page {
 
 .menu-icon {
   width: 48rpx;
+  height: 48rpx;
   margin-right: 28rpx;
-  font-size: 40rpx;
-  font-weight: 800;
-  text-align: center;
+  flex-shrink: 0;
 }
 
-.menu-icon.red {
-  color: #c9342e;
-}
-
-.menu-icon.blue {
-  color: #4a9cf0;
-}
-
-.menu-icon.green {
-  color: #5b8526;
+.menu-icon-image {
+  width: 48rpx;
+  height: 48rpx;
+  display: block;
 }
 
 .menu-label {
@@ -55,9 +74,68 @@ page {
   font-weight: 800;
 }
 
-.menu-arrow {
-  color: #999999;
-  font-size: 58rpx;
-  font-weight: 200;
-  line-height: 58rpx;
+.menu-arrow-image {
+  width: 32rpx;
+  height: 32rpx;
+  display: block;
+  flex-shrink: 0;
+}
+
+.bottom-tabs {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  height: 118rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  background: #ffffff;
+  border-top: 1rpx solid #dddddd;
+  box-shadow: 0 -8rpx 22rpx rgba(0, 0, 0, 0.05);
+}
+
+.tab-item {
+  width: 20%;
+  height: 118rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #8d8d8d;
+  font-size: 22rpx;
+  font-weight: 700;
+}
+
+.tab-icon-image {
+  width: 46rpx;
+  height: 46rpx;
+  display: block;
+}
+
+.tab-label {
+  margin-top: 4rpx;
+}
+
+.tab-item.active {
+  color: #e5798c;
+}
+
+.tab-upload {
+  transform: translateY(-28rpx);
+}
+
+.tab-upload .tab-icon-image {
+  width: 116rpx;
+  height: 116rpx;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1rpx solid #dddddd;
+  box-shadow: 0 -8rpx 24rpx rgba(0, 0, 0, 0.05);
+}
+
+.tab-upload .tab-label {
+  margin-top: 0;
+  color: #262626;
 }

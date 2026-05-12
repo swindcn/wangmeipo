@@ -47,21 +47,41 @@ exports.main = async (event) => {
     return { ok: false, error: "candidateId is required" }
   }
 
-  if (!["approve", "reject"].includes(action)) {
+  if (!["approve", "reject", "delete", "restore"].includes(action)) {
     return { ok: false, error: "invalid action" }
   }
 
-  const profileStatus = action === "approve" ? "published" : "rejected"
-  const reviewedAtKey = action === "approve" ? "publishedAt" : "rejectedAt"
+  const actionConfig = {
+    approve: {
+      profileStatus: "published",
+      reviewedAtKey: "publishedAt",
+      auditAction: "review_candidate_approved",
+    },
+    reject: {
+      profileStatus: "rejected",
+      reviewedAtKey: "rejectedAt",
+      auditAction: "review_candidate_rejected",
+    },
+    delete: {
+      profileStatus: "deleted",
+      reviewedAtKey: "deletedAt",
+      auditAction: "candidate_deleted",
+    },
+    restore: {
+      profileStatus: "published",
+      reviewedAtKey: "restoredAt",
+      auditAction: "candidate_restored",
+    },
+  }[action]
 
   await db.collection("candidates").doc(candidateId).update({
     data: {
       ...patch,
-      profileStatus,
+      profileStatus: actionConfig.profileStatus,
       updatedAt: now,
       updatedBy: currentUser._id,
       reviewedAt: now,
-      [reviewedAtKey]: now,
+      [actionConfig.reviewedAtKey]: now,
     },
   })
 
@@ -70,7 +90,7 @@ exports.main = async (event) => {
       actorUserId: currentUser._id,
       targetType: "candidate",
       targetId: candidateId,
-      action: action === "approve" ? "review_candidate_approved" : "review_candidate_rejected",
+      action: actionConfig.auditAction,
       metadata: {
         patch,
       },
@@ -78,5 +98,5 @@ exports.main = async (event) => {
     },
   })
 
-  return { ok: true, profileStatus }
+  return { ok: true, profileStatus: actionConfig.profileStatus }
 }

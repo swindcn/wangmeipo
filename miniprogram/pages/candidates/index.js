@@ -1,47 +1,93 @@
-const { listReviewQueue } = require("../../utils/api")
+const { listReviewQueue, manageViewRequests } = require("../../utils/api")
+
+const tabItems = [
+  { key: "home", label: "汇匹配", currentIconUrl: "../../assets/icons/tab-home.png", className: "tab-item" },
+  { key: "assistant", label: "问美媒", currentIconUrl: "../../assets/icons/tab-assistant.png", className: "tab-item" },
+  { key: "upload", label: "传资料", currentIconUrl: "../../assets/icons/tab-upload.png", className: "tab-item tab-upload" },
+  { key: "manage", label: "懂管理", currentIconUrl: "../../assets/icons/tab-manage-active.png", className: "tab-item active" },
+  { key: "mine", label: "我的", currentIconUrl: "../../assets/icons/tab-mine.png", className: "tab-item" },
+]
 
 Page({
   data: {
+    navTopGap: 88,
     pendingReviewText: "",
-    memberRequestText: "8+",
+    pendingViewRequestText: "",
+    tabItems,
     menuItems: [
       {
         key: "review",
-        icon: "▦",
+        iconUrl: "../../assets/icons/manage-review.png",
         iconClass: "menu-icon red",
         label: "资料审核",
         badge: "",
       },
       {
-        key: "access",
-        icon: "◉",
-        iconClass: "menu-icon blue",
-        label: "会员想看",
-        badge: "8+",
+        key: "viewRequests",
+        iconUrl: "../../assets/icons/mine-wanted.png",
+        iconClass: "menu-icon orange",
+        label: "想看处理",
+        badge: "",
       },
       {
         key: "admins",
-        icon: "♟",
+        iconUrl: "../../assets/icons/manage-admin.png",
         iconClass: "menu-icon green",
         label: "管理员设置",
+        badge: "",
+      },
+      {
+        key: "recycle",
+        iconUrl: "../../assets/icons/manage-recycle.png",
+        iconClass: "menu-icon orange",
+        label: "会员回收站",
+        badge: "",
+      },
+      {
+        key: "subscription",
+        iconUrl: "../../assets/icons/manage-subscription.png",
+        iconClass: "menu-icon blue",
+        label: "订阅记录",
         badge: "",
       },
     ],
   },
   onShow() {
+    this.initNavMetrics()
     this.loadSummary()
+  },
+  initNavMetrics() {
+    const menuButton = wx.getMenuButtonBoundingClientRect ? wx.getMenuButtonBoundingClientRect() : null
+    const windowInfo = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync()
+    const windowWidth = windowInfo.windowWidth || 375
+    const pxToRpx = (px) => px * 750 / windowWidth
+    const topGapPx = menuButton && menuButton.bottom
+      ? menuButton.bottom + 8
+      : (windowInfo.statusBarHeight || 20) + 44
+
+    this.setData({
+      navTopGap: Math.ceil(pxToRpx(topGapPx)),
+    })
   },
   async loadSummary() {
     try {
-      const pendingItems = await listReviewQueue({ status: "pending_review" })
+      const [pendingItems, pendingViewRequestResult] = await Promise.all([
+        listReviewQueue({ status: "pending_review" }),
+        manageViewRequests({ action: "listRequests", status: "pending" }),
+      ])
       const pendingReview = pendingItems.length
       const pendingReviewText = pendingReview > 99 ? "99+" : pendingReview ? `${pendingReview}+` : ""
+      const pendingViewRequest = pendingViewRequestResult.ok ? (pendingViewRequestResult.items || []).length : 0
+      const pendingViewRequestText = pendingViewRequest > 99 ? "99+" : pendingViewRequest ? `${pendingViewRequest}+` : ""
 
       this.setData({
         pendingReviewText,
+        pendingViewRequestText,
         menuItems: this.data.menuItems.map((item) => ({
           ...item,
-          badge: item.key === "review" ? pendingReviewText : item.badge,
+          badge: item.key === "review"
+            ? pendingReviewText
+            : (item.key === "viewRequests" ? pendingViewRequestText : item.badge),
         })),
       })
     } catch (error) {
@@ -56,11 +102,50 @@ Page({
       return
     }
 
-    if (key === "access") {
-      wx.navigateTo({ url: "/pages/permission-manage/index" })
+    if (key === "viewRequests") {
+      wx.navigateTo({ url: "/pages/view-requests/index" })
       return
     }
 
-    wx.showToast({ title: "管理员设置后续接入", icon: "none" })
+    if (key === "recycle") {
+      wx.navigateTo({ url: "/pages/recycle-bin/index" })
+      return
+    }
+
+    if (key === "subscription") {
+      wx.navigateTo({ url: "/pages/subscription-members/index" })
+      return
+    }
+
+    if (key === "admins") {
+      wx.navigateTo({ url: "/pages/admin-settings/index" })
+      return
+    }
+  },
+  handleTabTap(event) {
+    const { key } = event.currentTarget.dataset
+
+    if (key === "manage") {
+      return
+    }
+
+    if (key === "home") {
+      wx.redirectTo({ url: "/pages/index/index" })
+      return
+    }
+
+    if (key === "upload") {
+      wx.navigateTo({ url: "/pages/upload-profile/index" })
+      return
+    }
+
+    if (key === "assistant") {
+      wx.redirectTo({ url: "/pages/ask-matchmaker/index" })
+      return
+    }
+
+    if (key === "mine") {
+      wx.redirectTo({ url: "/pages/my-access/index" })
+    }
   },
 })

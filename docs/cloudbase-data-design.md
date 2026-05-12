@@ -141,6 +141,27 @@
 - `candidateId + permissionLevel`
 - `expiresAt`
 
+### `candidate_manager_scopes`
+
+控制次级管理员能管理哪些会员资料。超管不需要写入此集合，默认拥有全部管理范围。
+
+关键字段：
+
+- `_id`
+- `managerUserId`: 次级管理员用户 ID
+- `candidateId`: 可管理的会员 ID
+- `status`: `active | disabled`
+- `grantedBy`: 授权人 ID
+- `reason`
+- `createdAt`
+- `updatedAt`
+
+建议索引：
+
+- `managerUserId + candidateId` 唯一索引
+- `candidateId + status`
+- `managerUserId + status`
+
 ### `share_tokens`
 
 小程序分享后落地的访问控制记录。

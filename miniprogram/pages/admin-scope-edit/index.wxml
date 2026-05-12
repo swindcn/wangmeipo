@@ -1,0 +1,34 @@
+<view class="scope-page">
+  <view class="manager-row" bindtap="handlePickManager">
+    <view wx:if="{{!manager}}" class="plus-box">+</view>
+    <image wx:elif="{{manager.avatarUrl}}" class="avatar" src="{{manager.avatarUrl}}" mode="aspectFill" />
+    <view wx:else class="avatar avatar-text">{{manager.initial}}</view>
+    <view class="manager-name">{{manager ? manager.nickname : '请选择管理员'}}</view>
+    <view class="arrow">›</view>
+  </view>
+
+  <view class="section-row">
+    <view class="section-title">选择管理的会员</view>
+    <view class="add-link" bindtap="handleAddCandidates">+ 添加</view>
+  </view>
+
+  <view class="candidate-list">
+    <block wx:for="{{selectedCandidates}}" wx:key="_id">
+      <view class="candidate-row">
+        <image wx:if="{{item.photoUrl}}" class="candidate-photo" src="{{item.photoUrl}}" mode="aspectFill" />
+        <view wx:else class="candidate-photo placeholder">会</view>
+        <view class="candidate-main">
+          <view class="candidate-title">{{item.title}}</view>
+          <view class="candidate-meta">{{item.meta}}</view>
+        </view>
+        <view class="remove" data-id="{{item._id}}" bindtap="handleRemoveCandidate">×</view>
+      </view>
+    </block>
+  </view>
+
+  <view class="bottom-bar">
+    <view class="count-text">已选 <text>{{selectedCandidates.length}}</text> 个会员</view>
+    <view class="delete-text">删除</view>
+    <button class="save-button" loading="{{saving}}" disabled="{{saving}}" bindtap="handleSave">保存设置</button>
+  </view>
+</view>

@@ -1,0 +1,108 @@
+page {
+  background: #ffffff;
+}
+
+.my-list-page {
+  min-height: 100vh;
+  background: #ffffff;
+}
+
+.list {
+  border-top: 1rpx solid #eeeeee;
+}
+
+.list-row {
+  min-height: 160rpx;
+  display: flex;
+  align-items: center;
+  padding: 24rpx;
+  border-bottom: 1rpx solid #eeeeee;
+  box-sizing: border-box;
+}
+
+.row-photo {
+  width: 128rpx;
+  height: 128rpx;
+  flex-shrink: 0;
+  margin-right: 24rpx;
+  background: #eeeeee;
+}
+
+.row-photo.blurred {
+  filter: blur(10rpx);
+  transform: scale(1.03);
+}
+
+.placeholder {
+  color: #999999;
+  font-size: 28rpx;
+  font-weight: 900;
+  line-height: 128rpx;
+  text-align: center;
+}
+
+.row-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.row-title {
+  overflow: hidden;
+  color: #111111;
+  font-size: 31rpx;
+  font-weight: 800;
+  line-height: 44rpx;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.row-line {
+  overflow: hidden;
+  margin-top: 4rpx;
+  color: #555555;
+  font-size: 26rpx;
+  line-height: 36rpx;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.row-status {
+  width: 110rpx;
+  flex-shrink: 0;
+  margin-left: 10rpx;
+  font-size: 27rpx;
+  font-weight: 800;
+  text-align: right;
+}
+
+.row-status.pending {
+  color: #1f8eea;
+}
+
+.row-status.approved {
+  color: #63a531;
+}
+
+.row-status.rejected {
+  color: #d6362f;
+}
+
+.row-status.neutral {
+  color: #999999;
+}
+
+.row-arrow {
+  width: 30rpx;
+  color: #999999;
+  font-size: 58rpx;
+  font-weight: 200;
+  line-height: 58rpx;
+  text-align: right;
+}
+
+.empty {
+  padding: 180rpx 24rpx;
+  color: #999999;
+  font-size: 28rpx;
+  text-align: center;
+}

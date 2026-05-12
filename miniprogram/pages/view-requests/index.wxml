@@ -1,0 +1,29 @@
+<view class="messages-page">
+  <view wx:if="{{loading}}" class="empty-text">加载中...</view>
+
+  <view wx:elif="{{items.length}}" class="request-list">
+    <block wx:for="{{items}}" wx:key="_id">
+      <view class="request-row" data-id="{{item._id}}" data-candidate-id="{{item.candidateId}}" bindtap="handleOpenRequest">
+        <image wx:if="{{item.photoUrl}}" class="request-photo" src="{{item.photoUrl}}" mode="aspectFill" />
+        <view wx:else class="request-photo placeholder">会</view>
+        <view class="request-main">
+          <view class="request-title">{{item.title}}</view>
+          <view class="request-line">申请人：{{item.requesterNickname}}</view>
+          <view class="request-line">提交时间：{{item.requestedAtText}}</view>
+        </view>
+        <view class="chevron">›</view>
+      </view>
+    </block>
+  </view>
+
+  <view wx:else class="empty-text">暂无想看申请</view>
+
+  <view class="bottom-tabs">
+    <block wx:for="{{tabItems}}" wx:key="key">
+      <view class="{{item.className}}" data-key="{{item.key}}" bindtap="handleTabTap">
+        <image class="tab-icon-image" src="{{item.currentIconUrl}}" mode="aspectFit" />
+        <view class="tab-label">{{item.label}}</view>
+      </view>
+    </block>
+  </view>
+</view>

@@ -1,3 +1,4 @@
 {
-  "navigationBarTitleText": "我的可查看对象"
+  "navigationBarTitleText": "我的",
+  "navigationStyle": "custom"
 }

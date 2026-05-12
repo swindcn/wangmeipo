@@ -1,12 +1,22 @@
 {
   "pages": [
     "pages/index/index",
+    "pages/ask-matchmaker/index",
     "pages/upload-profile/index",
     "pages/candidates/index",
     "pages/candidate-detail/index",
+    "pages/public-candidate-detail/index",
+    "pages/view-requests/index",
+    "pages/admin-settings/index",
+    "pages/admin-user-picker/index",
+    "pages/admin-scope-edit/index",
+    "pages/admin-candidate-picker/index",
     "pages/review-queue/index",
+    "pages/subscription-members/index",
+    "pages/recycle-bin/index",
     "pages/permission-manage/index",
     "pages/match-records/index",
+    "pages/my-list/index",
     "pages/my-access/index"
   ],
   "window": {

@@ -129,6 +129,20 @@ function deriveAgeFromBirthYear(birthYear) {
   return String(getCurrentYear() - year)
 }
 
+function normalizeAge(value) {
+  const matched = String(value || "").match(/\d{1,3}/)
+  if (!matched) return ""
+  const age = Number(matched[0])
+  if (age < 18 || age > 90) return ""
+  return String(age)
+}
+
+function deriveBirthYearFromAge(age) {
+  const normalizedAge = Number(normalizeAge(age))
+  if (!normalizedAge) return ""
+  return String(getCurrentYear() - normalizedAge)
+}
+
 function deriveZodiacFromBirthYear(birthYear) {
   const year = Number(normalizeYear(birthYear))
   if (!year) return ""
@@ -137,7 +151,27 @@ function deriveZodiacFromBirthYear(birthYear) {
 
 function applyBirthYearDerivedFields(form, options = {}) {
   const birthYear = normalizeYear(form.birthYear)
-  if (!birthYear) return form
+
+  if (!birthYear) {
+    const normalizedAge = normalizeAge(form.age)
+    const inferredBirthYear = deriveBirthYearFromAge(normalizedAge)
+    if (!inferredBirthYear) {
+      if (!birthYear) return form
+    } else {
+      const nextForm = {
+        ...form,
+        age: normalizedAge,
+        birthYear: inferredBirthYear,
+      }
+
+      if (!options.keepZodiac && !form.zodiac) {
+        nextForm.zodiac = deriveZodiacFromBirthYear(inferredBirthYear)
+      }
+
+      nextForm.zodiacDisplay = nextForm.zodiac || "选择"
+      return nextForm
+    }
+  }
 
   const nextForm = {
     ...form,
@@ -249,9 +283,9 @@ Page({
     tags: availableTags,
     tagItems: availableTags.map((item) => ({
       name: item,
-      className: item === "美女" ? "tag-pill selected" : "tag-pill",
+      className: "tag-pill",
     })),
-    selectedTags: ["美女"],
+    selectedTags: [],
     pickerOptions: {
       gender: genderList,
       zodiac: zodiacList,
@@ -261,33 +295,35 @@ Page({
     form: buildDefaultForm(),
     submitter: buildSubmitterSnapshot({}),
     reviewStatus: "pending_review",
+    reviewStatusText: "",
     isManager: false,
     reviewHint: "普通用户提交：保存后进入审核",
     saving: false,
   },
   onLoad(query = {}) {
     const app = getApp()
-    const mode = query.mode === "review" ? "review" : "create"
+    const mode = query.mode === "review" || query.mode === "edit" ? query.mode : "create"
     const submitter = buildSubmitterSnapshot(app.globalData.currentUserProfile || {})
     const isManager = app.globalData.userRole === "manager" || app.globalData.userRole === "super_admin"
 
     this.setData({
       mode,
       candidateId: query.id || "",
-      pageTitle: mode === "review" ? "上传/编辑信息" : "上传/编辑信息",
+      pageTitle: "上传/编辑信息",
       saveButtonText: mode === "review" ? "同意" : "保存",
-      rejectButtonText: "拒绝",
+      rejectButtonText: mode === "edit" ? "取消" : "拒绝",
       submitter,
       isManager,
       reviewStatus: isManager ? "published" : "pending_review",
+      reviewStatusText: mode === "review" ? "待审核" : (isManager ? "" : "待审核"),
       reviewHint: mode === "review"
         ? "管理员审核：修改后可拒绝或同意"
-        : (isManager ? "管理员提交：保存后直接上架" : "普通用户提交：保存后进入审核"),
+        : (mode === "edit" ? "管理员编辑：保存后更新会员资料" : (isManager ? "管理员提交：保存后直接上架" : "普通用户提交：保存后进入审核")),
     })
 
     wx.setNavigationBarTitle({ title: "上传/编辑信息" })
 
-    if (mode === "review" && query.id) {
+    if ((mode === "review" || mode === "edit") && query.id) {
       this.loadReviewCandidate(query.id)
     }
   },
@@ -490,10 +526,39 @@ Page({
     const { field } = event.currentTarget.dataset
     const value = event.detail.value
 
+    if (field === "birthYear" || field === "age") {
+      this.setData({ [`form.${field}`]: value })
+      return
+    }
+
+    this.setData({ [`form.${field}`]: value })
+  },
+  handleDerivedFieldBlur(event) {
+    const { field } = event.currentTarget.dataset
+    const value = event.detail.value
+
     if (field === "birthYear") {
+      if (!String(value || "").trim()) {
+        this.setData({
+          "form.birthYear": "",
+          "form.zodiac": "",
+          "form.zodiacDisplay": "选择",
+        })
+        return
+      }
+
       const form = applyBirthYearDerivedFields({
         ...this.data.form,
         birthYear: value,
+      })
+      this.setData({ form })
+      return
+    }
+
+    if (field === "age") {
+      const form = applyBirthYearDerivedFields({
+        ...this.data.form,
+        age: value,
       })
       this.setData({ form })
       return
@@ -541,6 +606,11 @@ Page({
   },
   handleSave() {
     if (this.data.mode === "review") {
+      this.reviewProfile("approve")
+      return
+    }
+
+    if (this.data.mode === "edit") {
       this.reviewProfile("approve")
       return
     }
@@ -615,6 +685,8 @@ Page({
         icon: "success",
       })
 
+      getApp().globalData.homeProfilesDirty = true
+
       setTimeout(() => {
         wx.navigateBack()
       }, 600)
@@ -631,7 +703,7 @@ Page({
 
     this.setData({ saving: true })
     this.setData({ rejectLoading: action === "reject" })
-    wx.showLoading({ title: action === "approve" ? "同意中" : "拒绝中" })
+    wx.showLoading({ title: this.data.mode === "edit" ? "保存中" : (action === "approve" ? "同意中" : "拒绝中") })
 
     try {
       const photoAssetIds = await this.uploadPhotos()
@@ -644,7 +716,8 @@ Page({
         throw new Error(result.error || "review failed")
       }
 
-      wx.showToast({ title: action === "approve" ? "已同意" : "已拒绝", icon: "success" })
+      wx.showToast({ title: this.data.mode === "edit" ? "已保存" : (action === "approve" ? "已同意" : "已拒绝"), icon: "success" })
+      getApp().globalData.homeProfilesDirty = true
       setTimeout(() => {
         wx.navigateBack()
       }, 600)

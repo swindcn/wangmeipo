@@ -1,0 +1,109 @@
+<view class="assistant-page">
+  <scroll-view class="chat-scroll" scroll-y>
+    <view class="hero">
+      <view class="hero-kicker">AI 相亲小助理</view>
+      <view class="hero-title">问美媒</view>
+      <view class="hero-copy">用自然语言描述需求，我会先按资料库帮你筛出可能合适的会员。</view>
+    </view>
+
+    <view class="chat-list">
+      <block wx:for="{{messages}}" wx:key="index">
+        <view class="message-row {{item.role === 'user' ? 'user' : 'assistant'}}">
+          <view class="message-bubble {{item.pending ? 'pending' : ''}}">
+            <text>{{item.text}}</text>
+            <text wx:if="{{item.pending}}" class="typing-dot">·</text>
+          </view>
+        </view>
+      </block>
+    </view>
+
+    <view wx:if="{{candidates.length}}" class="result-list">
+      <view class="result-title">推荐会员</view>
+      <block wx:for="{{candidates}}" wx:key="_id">
+        <view class="candidate-row" data-id="{{item._id}}" bindtap="handleOpenCandidate">
+          <image wx:if="{{item.photoUrl}}" class="candidate-photo {{item.locked ? 'blurred' : ''}}" src="{{item.photoUrl}}" mode="aspectFill" />
+          <view wx:else class="candidate-photo placeholder">会</view>
+          <view class="candidate-main">
+            <view class="candidate-title">{{item.title}}　{{item.code}}</view>
+            <view class="candidate-summary">{{item.summary}}</view>
+            <view class="candidate-tags">
+              <text wx:for="{{item.tags}}" wx:key="*this" class="candidate-tag">{{item}}</text>
+            </view>
+          </view>
+          <view class="candidate-arrow">›</view>
+        </view>
+      </block>
+    </view>
+  </scroll-view>
+
+  <view class="ask-bar {{inputFocused ? 'focused' : ''}}">
+    <textarea
+      class="ask-input {{inputFocused ? 'focused' : ''}}"
+      value="{{question}}"
+      placeholder="输入需求，如：长乐 25-30岁 体制内 女生"
+      auto-height="{{false}}"
+      cursor-spacing="24"
+      show-confirm-bar="{{false}}"
+      bindinput="handleQuestionInput"
+      bindfocus="handleInputFocus"
+      bindblur="handleInputBlur"
+    ></textarea>
+    <button class="ask-button" loading="{{loading}}" disabled="{{loading}}" bindtap="handleAsk">问</button>
+  </view>
+
+  <view class="bottom-tabs">
+    <block wx:for="{{tabItems}}" wx:key="key">
+      <view class="{{item.className}}" data-key="{{item.key}}" bindtap="handleTabTap">
+        <image class="tab-icon-image" src="{{item.currentIconUrl}}" mode="aspectFit" />
+        <view class="tab-label">{{item.label}}</view>
+      </view>
+    </block>
+  </view>
+
+  <view wx:if="{{authModalVisible}}" class="auth-mask" bindtap="closeAuthModal">
+    <view class="auth-sheet" catchtap="stopAuthModalTap">
+      <view class="auth-title">先完成注册</view>
+      <view class="auth-desc">使用问美媒前需要绑定账号，用于权限判断和后续想看申请。</view>
+
+      <view class="auth-field-label">头像</view>
+      <view class="auth-avatar-row">
+        <button class="auth-avatar-button" open-type="chooseAvatar" bindchooseavatar="handleRegisterAvatar">
+          <image wx:if="{{registerProfile.avatarPreview}}" class="auth-avatar-image" src="{{registerProfile.avatarPreview}}" mode="aspectFill" />
+          <view wx:else class="auth-avatar-text">{{registerProfile.initial}}</view>
+        </button>
+        <view class="auth-avatar-tip">点击选择微信头像</view>
+      </view>
+
+      <view class="auth-field-label">昵称</view>
+      <view class="auth-form-row">
+        <input
+          class="auth-nickname-input"
+          type="nickname"
+          value="{{registerProfile.nickname}}"
+          bindinput="handleRegisterNickname"
+          placeholder="填写微信昵称"
+        />
+      </view>
+
+      <view class="auth-field-label">手机号</view>
+      <input
+        class="auth-phone-input"
+        type="number"
+        value="{{registerProfile.phone}}"
+        bindinput="handleRegisterPhoneInput"
+        placeholder="可手动填写手机号"
+      />
+      <button
+        class="auth-phone-button"
+        loading="{{registering}}"
+        disabled="{{registering}}"
+        open-type="getPhoneNumber"
+        bindgetphonenumber="handleRegisterPhone"
+      >
+        微信授权手机号并继续提问
+      </button>
+      <view class="auth-secondary" bindtap="handleRegisterWithoutPhone">不授权手机号，直接继续提问</view>
+      <view class="auth-cancel" bindtap="closeAuthModal">暂不提问</view>
+    </view>
+  </view>
+</view>

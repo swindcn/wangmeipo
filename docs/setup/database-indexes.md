@@ -38,6 +38,12 @@
 - `candidateId + permissionLevel`
 - `expiresAt`
 
+## `candidate_manager_scopes`
+
+- `managerUserId + candidateId` 唯一索引
+- `candidateId + status`
+- `managerUserId + status`
+
 ## `share_tokens`
 
 - `token` 唯一索引

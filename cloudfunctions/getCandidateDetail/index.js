@@ -3,27 +3,297 @@ const cloud = require("wx-server-sdk")
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 
 const db = cloud.database()
-const PERMISSION_RANK = {
-  text_only: 0,
-  text_with_photo: 1,
-  full_profile_no_contact: 2,
-  full_profile: 3,
+const KEY_ACTIONS = [
+  "edit",
+  "delete",
+  "setSubscription",
+  "publicShare",
+]
+
+const SEARCH_FIELD_DEFS = [
+  { key: "tags", label: "标签", weight: 12, getValue: (candidate) => candidate.tags },
+  { key: "occupation", label: "职业", weight: 11, getValue: (candidate) => candidate.occupation },
+  { key: "ancestralHome", label: "祖籍", weight: 10, getValue: (candidate) => candidate.ancestralHome },
+  { key: "currentAddress", label: "常住地", weight: 9, getValue: (candidate) => candidate.currentAddress },
+  { key: "matchRequirements", label: "择偶要求", weight: 8, getValue: (candidate) => candidate.matchRequirements },
+  { key: "familyBackground", label: "家庭情况", weight: 7, getValue: (candidate) => candidate.familyBackground },
+  { key: "assets", label: "房产情况", weight: 7, getValue: (candidate) => candidate.assets },
+  { key: "personality", label: "性格", weight: 6, getValue: (candidate) => candidate.personality },
+  { key: "hobbies", label: "爱好", weight: 6, getValue: (candidate) => candidate.hobbies },
+  { key: "education", label: "学历", weight: 6, getValue: (candidate) => candidate.education },
+  { key: "gender", label: "性别", weight: 5, getValue: (candidate) => candidate.gender },
+  { key: "age", label: "年龄", weight: 5, getValue: (candidate) => candidate.age },
+  { key: "birthYear", label: "出生年份", weight: 5, getValue: (candidate) => candidate.birthYear },
+  { key: "zodiac", label: "生肖", weight: 5, getValue: (candidate) => candidate.zodiac },
+  { key: "religion", label: "宗教", weight: 4, getValue: (candidate) => candidate.religion },
+  { key: "candidateCode", label: "编号", weight: 4, getValue: (candidate) => candidate.candidateCode },
+  { key: "sourceSummary", label: "备注", weight: 3, getValue: (candidate) => candidate.sourceSummary },
+  { key: "rawText", label: "原文", weight: 3, getValue: (candidate) => candidate.rawText },
+  { key: "submitter", label: "提交人", weight: 2, getValue: (candidate) => candidate.submitter && candidate.submitter.nickname },
+  { key: "name", label: "姓名", weight: 1, getValue: (candidate) => candidate.name },
+]
+
+const SEARCH_SYNONYMS = {
+  公务员: ["公务员", "体制内", "事业单位", "编制", "机关", "国企", "稳定工作", "银行", "光大银行"],
+  体制内: ["体制内", "公务员", "事业单位", "编制", "机关", "国企", "银行", "光大银行"],
+  编制: ["编制", "体制内", "公务员", "事业单位", "国企", "银行"],
+  稳定: ["稳定", "稳定工作", "工作稳定", "体制内", "公务员", "事业单位", "国企", "教师", "医生", "银行", "光大银行"],
+  稳定工作: ["稳定工作", "工作稳定", "稳定", "体制内", "公务员", "事业单位", "国企", "银行", "光大银行"],
+  银行: ["银行", "光大银行", "体制内", "稳定工作"],
+  长乐: ["长乐"],
+  本科: ["本科", "大学"],
+  硕士: ["硕士", "研究生"],
+  美女: ["美女", "女", "女生", "女孩", "女士"],
+  帅哥: ["帅哥", "男", "男生", "男孩", "男士"],
+  女: ["女", "女生", "女孩", "女士"],
+  男: ["男", "男生", "男孩", "男士"],
 }
 
-function includesKeyword(candidate, keyword) {
-  if (!keyword) {
-    return true
+function normalizeSearchText(value) {
+  if (Array.isArray(value)) {
+    return value.map(normalizeSearchText).filter(Boolean).join(" ")
   }
 
-  const haystacks = [
-    candidate.name,
-    candidate.occupation,
-    candidate.education,
-    candidate.currentAddress,
-    candidate.sourceSummary,
-  ]
+  if (value === null || value === undefined) {
+    return ""
+  }
 
-  return haystacks.filter(Boolean).some((item) => String(item).includes(keyword))
+  return String(value).toLowerCase().replace(/\s+/g, "")
+}
+
+function uniqueItems(items) {
+  return Array.from(new Set(items.filter(Boolean)))
+}
+
+function parseAgeCriteria(keyword) {
+  const text = normalizeSearchText(keyword)
+  if (!text) {
+    return null
+  }
+
+  const rangeMatched = text.match(/(?:年龄)?(\d{2})(?:岁)?(?:-|~|到|至)(\d{2})(?:岁)?/)
+  if (rangeMatched) {
+    const minAge = Number(rangeMatched[1])
+    const maxAge = Number(rangeMatched[2])
+    if (Number.isFinite(minAge) && Number.isFinite(maxAge)) {
+      return {
+        min: Math.min(minAge, maxAge),
+        max: Math.max(minAge, maxAge),
+        label: `${Math.min(minAge, maxAge)}-${Math.max(minAge, maxAge)}岁`,
+        raw: rangeMatched[0],
+      }
+    }
+  }
+
+  const minMatched = text.match(/(\d{2})(?:岁)?(?:以上|及以上|起)/)
+  if (minMatched) {
+    const minAge = Number(minMatched[1])
+    if (Number.isFinite(minAge)) {
+      return {
+        min: minAge,
+        max: null,
+        label: `${minAge}岁以上`,
+        raw: minMatched[0],
+      }
+    }
+  }
+
+  const maxMatched = text.match(/(\d{2})(?:岁)?(?:以下|以内|内)/)
+  if (maxMatched) {
+    const maxAge = Number(maxMatched[1])
+    if (Number.isFinite(maxAge)) {
+      return {
+        min: null,
+        max: maxAge,
+        label: `${maxAge}岁以下`,
+        raw: maxMatched[0],
+      }
+    }
+  }
+
+  const singleMatched = text.match(/(?:年龄)?(\d{2})(?:岁|左右)?/)
+  if (singleMatched) {
+    const age = Number(singleMatched[1])
+    if (Number.isFinite(age)) {
+      return {
+        min: age,
+        max: age,
+        label: `${age}岁`,
+        raw: singleMatched[0],
+      }
+    }
+  }
+
+  if (/年轻|年轻点|年轻的|小姑娘/.test(text)) {
+    return {
+      min: 20,
+      max: 32,
+      label: "年轻",
+      raw: "年轻",
+    }
+  }
+
+  return null
+}
+
+function removeAgeCriteriaText(keyword, ageCriteria) {
+  if (!ageCriteria || !ageCriteria.raw) {
+    return keyword
+  }
+
+  return normalizeSearchText(keyword).replace(ageCriteria.raw, "")
+}
+
+function extractSearchTokens(keyword) {
+  const text = normalizeSearchText(keyword)
+  if (!text) {
+    return []
+  }
+
+  const rawParts = String(keyword)
+    .split(/[\s,，、;；|/]+/)
+    .map((item) => normalizeSearchText(item))
+    .filter(Boolean)
+  const tokens = rawParts.length > 0 ? rawParts : [text]
+
+  Object.keys(SEARCH_SYNONYMS).forEach((key) => {
+    const normalizedKey = normalizeSearchText(key)
+    if (text.includes(normalizedKey)) {
+      tokens.push(normalizedKey)
+    }
+  })
+
+  if (/女|女生|女孩|女士|美女/.test(text)) {
+    tokens.push("女")
+  }
+
+  if (/男|男生|男孩|男士|帅哥/.test(text)) {
+    tokens.push("男")
+  }
+
+  const synonymKeys = Object.keys(SEARCH_SYNONYMS).map(normalizeSearchText)
+  const meaningfulTokens = tokens.filter((token) => {
+    const matchedKeys = synonymKeys.filter((key) => token.includes(key))
+    if (matchedKeys.length === 0) return true
+    return matchedKeys.includes(token)
+  })
+
+  return uniqueItems(meaningfulTokens)
+}
+
+function expandSearchToken(token) {
+  const normalizedToken = normalizeSearchText(token)
+  const synonymKey = Object.keys(SEARCH_SYNONYMS).find((key) => normalizeSearchText(key) === normalizedToken)
+  const synonyms = synonymKey ? SEARCH_SYNONYMS[synonymKey].map(normalizeSearchText) : []
+  return uniqueItems([normalizedToken, ...synonyms])
+}
+
+function buildSearchGroups(keyword) {
+  const ageCriteria = parseAgeCriteria(keyword)
+  const keywordWithoutAge = removeAgeCriteriaText(keyword, ageCriteria)
+  return extractSearchTokens(keywordWithoutAge).map((token) => ({
+    token,
+    terms: expandSearchToken(token),
+  }))
+}
+
+function getSearchFieldText(candidate, field) {
+  return normalizeSearchText(field.getValue(candidate))
+}
+
+function getGenderToken(token) {
+  const normalizedToken = normalizeSearchText(token)
+  if (["女", "美女", "女生", "女孩", "女士"].includes(normalizedToken)) {
+    return "女"
+  }
+
+  if (["男", "帅哥", "男生", "男孩", "男士"].includes(normalizedToken)) {
+    return "男"
+  }
+
+  return ""
+}
+
+function evaluateSearchCandidate(candidate, searchGroups, ageCriteria) {
+  const hitReasons = []
+  let score = 0
+
+  if (ageCriteria) {
+    const age = Number(candidate.age)
+    const minAge = ageCriteria.min
+    const maxAge = ageCriteria.max
+    const matchesMin = minAge === null || age >= minAge
+    const matchesMax = maxAge === null || age <= maxAge
+
+    if (!Number.isFinite(age) || !matchesMin || !matchesMax) {
+      return {
+        matched: false,
+        score: 0,
+        hitReasons: [],
+      }
+    }
+
+    score += 10
+    hitReasons.push(`年龄命中：${ageCriteria.label}`)
+  }
+
+  if (searchGroups.length === 0) {
+    return {
+      matched: true,
+      score,
+      hitReasons,
+    }
+  }
+
+  for (const group of searchGroups) {
+    let groupMatched = false
+    const genderToken = getGenderToken(group.token)
+
+    if (genderToken) {
+      if (candidate.gender !== genderToken) {
+        return {
+          matched: false,
+          score: 0,
+          hitReasons: [],
+        }
+      }
+
+      score += 5
+      hitReasons.push(`性别命中：${genderToken}`)
+      continue
+    }
+
+    for (const field of SEARCH_FIELD_DEFS) {
+      const fieldText = getSearchFieldText(candidate, field)
+      if (!fieldText) {
+        continue
+      }
+
+      const matchedTerm = group.terms.find((term) => fieldText.includes(term))
+      if (!matchedTerm) {
+        continue
+      }
+
+      groupMatched = true
+      score += field.weight
+      hitReasons.push(`${field.label}命中：${matchedTerm}`)
+      break
+    }
+
+    if (!groupMatched) {
+      return {
+        matched: false,
+        score: 0,
+        hitReasons: [],
+      }
+    }
+  }
+
+  return {
+    matched: true,
+    score,
+    hitReasons: uniqueItems(hitReasons).slice(0, 3),
+  }
 }
 
 function normalizeLimit(value, fallback, max) {
@@ -33,6 +303,40 @@ function normalizeLimit(value, fallback, max) {
   }
 
   return Math.min(Math.floor(limit), max)
+}
+
+function toTimestamp(value) {
+  if (!value) {
+    return 0
+  }
+
+  if (value instanceof Date) {
+    return value.getTime()
+  }
+
+  if (typeof value === "number") {
+    return value
+  }
+
+  if (typeof value === "object") {
+    if (value.$date && value.$date.$numberLong) {
+      return Number(value.$date.$numberLong) || 0
+    }
+
+    if (value.$date) {
+      const dateValue = typeof value.$date === "object" && value.$date.$numberLong
+        ? Number(value.$date.$numberLong)
+        : new Date(value.$date).getTime()
+      return Number.isFinite(dateValue) ? dateValue : 0
+    }
+  }
+
+  const timestamp = new Date(value).getTime()
+  return Number.isFinite(timestamp) ? timestamp : 0
+}
+
+function getSortTimestamp(candidate) {
+  return toTimestamp(candidate.updatedAt || candidate.publishedAt || candidate.createdAt)
 }
 
 async function buildPhotoUrls(photoAssetIds) {
@@ -49,22 +353,6 @@ async function buildPhotoUrls(photoAssetIds) {
     .filter(Boolean)
 }
 
-function pickHigherPermissionLevel(levels) {
-  let selected = "text_only"
-
-  for (const level of levels) {
-    if (!level) {
-      continue
-    }
-
-    if ((PERMISSION_RANK[level] || 0) > (PERMISSION_RANK[selected] || 0)) {
-      selected = level
-    }
-  }
-
-  return selected
-}
-
 function isTokenExpired(expiresAt) {
   if (!expiresAt) {
     return false
@@ -74,29 +362,34 @@ function isTokenExpired(expiresAt) {
   return Number.isNaN(expiresAtDate.getTime()) ? false : expiresAtDate.getTime() < Date.now()
 }
 
-function redactCandidate(candidate, permissionLevel) {
+function redactCandidate(candidate, access) {
   const safeCandidate = { ...candidate }
+  const permissionLevel = access.permissionLevel || "text_only"
 
-  if (permissionLevel === "text_only") {
+  if (!access.canViewPhone) {
     delete safeCandidate.phone
-    safeCandidate.photoUrls = []
-    safeCandidate.canViewPhotos = false
-    return safeCandidate
   }
 
-  if (permissionLevel === "text_with_photo") {
-    delete safeCandidate.phone
-    safeCandidate.canViewPhotos = true
-    return safeCandidate
+  if (!access.canViewName) {
+    delete safeCandidate.name
   }
 
-  if (permissionLevel === "full_profile_no_contact") {
-    delete safeCandidate.phone
-    safeCandidate.canViewPhotos = true
-    return safeCandidate
+  if (!access.canViewPhotos) {
+    safeCandidate.photoAssetIds = []
+    safeCandidate.photoSlots = safeCandidate.photosPresent ? [1] : []
   }
 
-  safeCandidate.canViewPhotos = true
+  safeCandidate.canViewPhotos = access.canViewPhotos
+  safeCandidate.canViewName = access.canViewName
+  safeCandidate.canViewPhone = access.canViewPhone
+  safeCandidate.canViewKeyData = access.canViewKeyData
+  safeCandidate.canUseKeyActions = access.canUseKeyActions
+  safeCandidate.canEdit = access.canEdit
+  safeCandidate.canDelete = access.canDelete
+  safeCandidate.canSetSubscription = access.canSetSubscription
+  safeCandidate.canPublicShare = access.canPublicShare
+  safeCandidate.permissionLevel = permissionLevel
+  safeCandidate.shareMode = access.shareMode || "private"
   return safeCandidate
 }
 
@@ -159,26 +452,211 @@ async function resolveSharePermission(candidateId, shareToken) {
   return shareTokenDoc.permissionLevel || "text_only"
 }
 
-async function resolvePermission(currentUser, candidateId, shareToken) {
-  let userPermission = "text_only"
+async function resolveUserPermission(currentUser, candidateId) {
+  if (!currentUser || !candidateId) {
+    return ""
+  }
 
-  if (currentUser) {
-    if (currentUser.role === "super_admin" || currentUser.role === "manager") {
-      userPermission = "full_profile"
-    } else {
-      const permissionResult = await db.collection("candidate_permissions").where({
-        viewerUserId: currentUser._id,
-        candidateId,
-      }).limit(1).get()
+  try {
+    const result = await db.collection("candidate_permissions").where({
+      viewerUserId: currentUser._id,
+      candidateId,
+    }).limit(1).get()
+    const permission = result.data[0]
+    if (!permission) {
+      return ""
+    }
 
-      if (permissionResult.data.length > 0) {
-        userPermission = permissionResult.data[0].permissionLevel || "text_only"
-      }
+    if (permission.expiresAt && isTokenExpired(permission.expiresAt)) {
+      return ""
+    }
+
+    return permission.permissionLevel || ""
+  } catch (error) {
+    return ""
+  }
+}
+
+async function resolveMyViewRequestStatus(currentUser, candidateId) {
+  if (!currentUser || !candidateId) {
+    return ""
+  }
+
+  try {
+    const result = await db.collection("view_requests").where({
+      requesterUserId: currentUser._id,
+      candidateId,
+    }).limit(20).get()
+    const activeRequest = result.data
+      .filter((item) => item.status === "pending")
+      .sort((left, right) => getSortTimestamp(right) - getSortTimestamp(left))[0]
+    return activeRequest ? activeRequest.status : ""
+  } catch (error) {
+    return ""
+  }
+}
+
+function buildAccess({
+  canViewPhotos = false,
+  canViewName = false,
+  canViewPhone = false,
+  canUseKeyActions = false,
+  permissionLevel = "text_only",
+  shareMode = "private",
+} = {}) {
+  const keyActions = canUseKeyActions
+
+  return {
+    canViewPhotos,
+    canViewName,
+    canViewPhone,
+    canViewKeyData: canViewPhotos && canViewName && canViewPhone,
+    canUseKeyActions: keyActions,
+    canEdit: keyActions,
+    canDelete: keyActions,
+    canSetSubscription: keyActions,
+    canPublicShare: keyActions,
+    permissionLevel,
+    shareMode,
+    keyActions: keyActions ? KEY_ACTIONS : [],
+  }
+}
+
+async function isScopedManager(currentUser, candidateId) {
+  if (!currentUser || !candidateId) {
+    return false
+  }
+
+  try {
+    const result = await db.collection("candidate_manager_scopes").where({
+      managerUserId: currentUser._id,
+      candidateId,
+      status: "active",
+    }).limit(1).get()
+    return result.data.length > 0
+  } catch (error) {
+    return false
+  }
+}
+
+function isCandidateCreator(currentUser, candidate) {
+  if (!currentUser || !candidate) {
+    return false
+  }
+
+  const submitter = candidate.submitter || {}
+  return Boolean(
+    (submitter.userId && submitter.userId === currentUser._id)
+    || (candidate.createdBy && candidate.createdBy === currentUser._id),
+  )
+}
+
+async function resolveAccess(currentUser, candidate, shareToken) {
+  const candidateId = candidate && candidate._id ? candidate._id : ""
+  const sharePermission = await resolveSharePermission(candidateId, shareToken)
+  const userPermission = await resolveUserPermission(currentUser, candidateId)
+
+  if (sharePermission === "public_full") {
+    return buildAccess({
+      canViewPhotos: true,
+      canViewName: false,
+      canViewPhone: false,
+      canUseKeyActions: false,
+      permissionLevel: "public_full",
+      shareMode: "public",
+    })
+  }
+
+  if (currentUser && currentUser.role === "super_admin") {
+    return buildAccess({
+      canViewPhotos: true,
+      canViewName: true,
+      canViewPhone: true,
+      canUseKeyActions: true,
+      permissionLevel: "full_profile",
+    })
+  }
+
+  if (currentUser && currentUser.role === "manager") {
+    const scoped = await isScopedManager(currentUser, candidateId)
+    if (scoped) {
+      return buildAccess({
+        canViewPhotos: true,
+        canViewName: true,
+        canViewPhone: true,
+        canUseKeyActions: true,
+        permissionLevel: "full_profile",
+      })
     }
   }
 
-  const sharePermission = await resolveSharePermission(candidateId, shareToken)
-  return pickHigherPermissionLevel([userPermission, sharePermission])
+  if (isCandidateCreator(currentUser, candidate)) {
+    return buildAccess({
+      canViewPhotos: true,
+      canViewName: true,
+      canViewPhone: true,
+      canUseKeyActions: false,
+      permissionLevel: "creator_key_data",
+    })
+  }
+
+  if (userPermission === "text_with_photo") {
+    return buildAccess({
+      canViewPhotos: true,
+      canViewName: false,
+      canViewPhone: false,
+      canUseKeyActions: false,
+      permissionLevel: "text_with_photo",
+    })
+  }
+
+  if (userPermission === "full_profile_no_contact") {
+    return buildAccess({
+      canViewPhotos: true,
+      canViewName: true,
+      canViewPhone: false,
+      canUseKeyActions: false,
+      permissionLevel: "full_profile_no_contact",
+    })
+  }
+
+  if (userPermission === "full_profile") {
+    return buildAccess({
+      canViewPhotos: true,
+      canViewName: true,
+      canViewPhone: true,
+      canUseKeyActions: false,
+      permissionLevel: "full_profile",
+    })
+  }
+
+  if (sharePermission === "text_with_photo") {
+    return buildAccess({
+      canViewPhotos: true,
+      canViewName: false,
+      canViewPhone: false,
+      canUseKeyActions: false,
+      permissionLevel: "text_with_photo",
+    })
+  }
+
+  if (sharePermission === "full_profile_no_contact") {
+    return buildAccess({
+      canViewPhotos: true,
+      canViewName: true,
+      canViewPhone: false,
+      canUseKeyActions: false,
+      permissionLevel: "full_profile_no_contact",
+    })
+  }
+
+  return buildAccess({
+    canViewPhotos: false,
+    canViewName: false,
+    canViewPhone: false,
+    canUseKeyActions: false,
+    permissionLevel: "text_only",
+  })
 }
 
 exports.main = async (event = {}) => {
@@ -190,23 +668,44 @@ exports.main = async (event = {}) => {
     const limit = normalizeLimit(event.limit, 12, 30)
     const includePhotos = event.includePhotos !== false
     const currentUser = await resolveDebugCurrentUser(event)
-    const isManager = currentUser && (currentUser.role === "super_admin" || currentUser.role === "manager")
+    const ageCriteria = parseAgeCriteria(keyword)
+    const searchGroups = buildSearchGroups(keyword)
 
     const filteredItems = result.data
       .filter((item) => filter === "all" || item.profileStatus === filter)
-      .filter((item) => includesKeyword(item, keyword))
-      .sort((left, right) => String(right.updatedAt).localeCompare(String(left.updatedAt)))
+      .map((item) => ({
+        item,
+        search: evaluateSearchCandidate(item, searchGroups, ageCriteria),
+      }))
+      .filter(({ search }) => search.matched)
+      .sort((left, right) => {
+        if (searchGroups.length > 0 && left.search.score !== right.search.score) {
+          return right.search.score - left.search.score
+        }
+
+        return getSortTimestamp(right.item) - getSortTimestamp(left.item)
+      })
       .slice(0, limit)
 
-    const items = await Promise.all(filteredItems.map(async (item) => {
-      const safeItem = redactCandidate(item, isManager ? "full_profile" : "text_only")
-      safeItem.permissionLevel = isManager ? "full_profile" : "text_only"
+    const items = await Promise.all(filteredItems.map(async ({ item, search }) => {
+      const access = await resolveAccess(currentUser, item, "")
+      const safeItem = redactCandidate(item, access)
+      safeItem.myViewRequestStatus = await resolveMyViewRequestStatus(currentUser, item._id)
+      safeItem.searchScore = search.score
+      safeItem.hitReasons = search.hitReasons
+
+      if (includePhotos) {
+        const rawPhotoAssetIds = Array.isArray(item.photoAssetIds) ? item.photoAssetIds : []
+        const primaryPhotoId = rawPhotoAssetIds[0] ? [rawPhotoAssetIds[0]] : []
+        safeItem.photoUrls = await buildPhotoUrls(primaryPhotoId)
+      } else {
+        safeItem.photoUrls = []
+      }
 
       if (safeItem.canViewPhotos && includePhotos) {
-        const primaryPhotoId = Array.isArray(safeItem.photoAssetIds) && safeItem.photoAssetIds[0]
-          ? [safeItem.photoAssetIds[0]]
+        safeItem.photoAssetIds = Array.isArray(item.photoAssetIds) && item.photoAssetIds[0]
+          ? [item.photoAssetIds[0]]
           : []
-        safeItem.photoUrls = await buildPhotoUrls(primaryPhotoId)
       }
 
       return safeItem
@@ -224,19 +723,20 @@ exports.main = async (event = {}) => {
 
   const candidateResult = await db.collection("candidates").doc(candidateId).get()
   const currentUser = await resolveDebugCurrentUser(event)
-  const permissionLevel = await resolvePermission(currentUser, candidateId, event.shareToken || "")
-  const item = redactCandidate(candidateResult.data, permissionLevel)
-  item.permissionLevel = permissionLevel
-
-  if (item.canViewPhotos) {
-    item.photoUrls = await buildPhotoUrls(item.photoAssetIds || [])
-  } else {
-    item.photoUrls = []
+  const shareToken = event.shareToken || ""
+  const access = await resolveAccess(currentUser, candidateResult.data, shareToken)
+  const item = redactCandidate(candidateResult.data, access)
+  item.myViewRequestStatus = await resolveMyViewRequestStatus(currentUser, candidateId)
+  if (event.source === "trash" && access.canUseKeyActions) {
+    item.fromTrash = true
   }
+
+  item.photoUrls = await buildPhotoUrls(candidateResult.data.photoAssetIds || [])
 
   return {
     ok: true,
-    permissionLevel,
+    permissionLevel: access.permissionLevel,
+    access,
     item,
   }
 }

@@ -1,0 +1,23 @@
+<view class="list-page">
+  <view wx:if="{{loading}}" class="empty">加载中...</view>
+  <view wx:if="{{!loading && !items.length}}" class="empty">回收站为空</view>
+
+  <view wx:if="{{!loading && items.length}}" class="member-list">
+    <block wx:for="{{items}}" wx:key="_id">
+      <view class="member-row" data-id="{{item.candidateId}}" bindtap="handleOpenDetail">
+        <image wx:if="{{item.photoUrl}}" class="member-photo" src="{{item.photoUrl}}" mode="aspectFill" />
+        <view wx:else class="member-photo placeholder">无图</view>
+
+        <view class="member-main">
+          <view class="member-title">
+            <text wx:if="{{item.candidateName}}">{{item.candidateName}}　</text>{{item.candidateCode || item.candidateId}}
+          </view>
+          <view class="member-line">提交人：{{item.submitterName}}</view>
+          <view class="member-line">删除时间：{{item.deletedAtText || '-'}}</view>
+        </view>
+
+        <view class="row-arrow">›</view>
+      </view>
+    </block>
+  </view>
+</view>

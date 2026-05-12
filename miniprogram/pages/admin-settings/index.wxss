@@ -1,0 +1,122 @@
+page {
+  background: #ffffff;
+}
+
+.admin-page {
+  min-height: 100vh;
+  background: #ffffff;
+  color: #333333;
+}
+
+.loading-text,
+.empty-text {
+  padding: 40rpx 0;
+  color: #999999;
+  font-size: 26rpx;
+  text-align: center;
+}
+
+.section-row {
+  height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28rpx;
+  border-bottom: 1rpx solid #eeeeee;
+  box-sizing: border-box;
+}
+
+.manager-section {
+  margin-top: 16rpx;
+}
+
+.section-left {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+}
+
+.section-icon {
+  width: 36rpx;
+  color: #9b9b9b;
+  font-size: 32rpx;
+  line-height: 36rpx;
+}
+
+.super-icon {
+  color: #c9342e;
+}
+
+.manager-icon {
+  color: #4d8a2d;
+}
+
+.section-title {
+  color: #555555;
+  font-size: 28rpx;
+  font-weight: 700;
+}
+
+.add-link {
+  color: #d95d70;
+  font-size: 26rpx;
+  font-weight: 700;
+}
+
+.admin-row {
+  min-height: 108rpx;
+  display: flex;
+  align-items: center;
+  padding: 14rpx 26rpx;
+  border-bottom: 1rpx solid #eeeeee;
+  box-sizing: border-box;
+}
+
+.avatar {
+  width: 62rpx;
+  height: 62rpx;
+  flex-shrink: 0;
+  border-radius: 8rpx;
+  background: #f1e6dc;
+}
+
+.avatar-text {
+  color: #9a6b48;
+  font-size: 26rpx;
+  font-weight: 800;
+  line-height: 62rpx;
+  text-align: center;
+}
+
+.admin-main {
+  flex: 1;
+  min-width: 0;
+  margin-left: 18rpx;
+}
+
+.admin-name {
+  color: #333333;
+  font-size: 28rpx;
+  font-weight: 800;
+  line-height: 38rpx;
+}
+
+.admin-desc {
+  margin-top: 4rpx;
+  color: #999999;
+  font-size: 23rpx;
+  line-height: 30rpx;
+}
+
+.scope-count {
+  flex-shrink: 0;
+  margin-right: 18rpx;
+  color: #666666;
+  font-size: 24rpx;
+}
+
+.arrow {
+  color: #999999;
+  font-size: 44rpx;
+  font-weight: 200;
+}

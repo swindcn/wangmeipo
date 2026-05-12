@@ -1,0 +1,29 @@
+<view class="list-page">
+  <view class="review-tabs">
+    <block wx:for="{{tabs}}" wx:key="key">
+      <view class="{{item.className}}" data-key="{{item.key}}" bindtap="handleTabTap">{{item.label}}</view>
+    </block>
+  </view>
+
+  <view wx:if="{{loading}}" class="empty">加载中...</view>
+  <view wx:if="{{!loading && !items.length}}" class="empty">暂无会员</view>
+
+  <view wx:if="{{!loading && items.length}}" class="member-list">
+    <block wx:for="{{items}}" wx:key="_id">
+      <view class="member-row" data-id="{{item.candidateId}}" bindtap="handleOpenDetail">
+        <image wx:if="{{item.photoUrl}}" class="member-photo" src="{{item.photoUrl}}" mode="aspectFill" />
+        <view wx:else class="member-photo placeholder">无图</view>
+
+        <view class="member-main">
+          <view class="member-title">
+            <text wx:if="{{item.candidateName}}">{{item.candidateName}}　</text>{{item.candidateCode || item.candidateId}}
+          </view>
+          <view class="member-line">提交人：{{item.submitterName}}</view>
+          <view class="member-line">到期时间：{{item.subscriptionExpiresText || '-'}}</view>
+        </view>
+
+        <view class="row-arrow">›</view>
+      </view>
+    </block>
+  </view>
+</view>

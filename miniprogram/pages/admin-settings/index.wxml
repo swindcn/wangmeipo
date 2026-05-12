@@ -1,0 +1,46 @@
+<view class="admin-page">
+  <view wx:if="{{loading}}" class="loading-text">加载中...</view>
+
+  <view class="section-row">
+    <view class="section-left">
+      <view class="section-icon super-icon">♟</view>
+      <view class="section-title">应用超管设置</view>
+    </view>
+    <view class="add-link" bindtap="handleAddSuperAdmin">+ 添加</view>
+  </view>
+
+  <block wx:for="{{superAdmins}}" wx:key="_id">
+    <view class="admin-row">
+      <image wx:if="{{item.avatarUrl}}" class="avatar" src="{{item.avatarUrl}}" mode="aspectFill" />
+      <view wx:else class="avatar avatar-text">{{item.initial}}</view>
+      <view class="admin-main">
+        <view class="admin-name">{{item.nickname}}</view>
+        <view wx:if="{{item.phone}}" class="admin-desc">{{item.phone}}</view>
+      </view>
+      <view class="arrow">›</view>
+    </view>
+  </block>
+
+  <view class="section-row manager-section">
+    <view class="section-left">
+      <view class="section-icon manager-icon">♣</view>
+      <view class="section-title">管理员设置</view>
+    </view>
+    <view class="add-link" bindtap="handleAddManager">+ 添加</view>
+  </view>
+
+  <block wx:for="{{managers}}" wx:key="_id">
+    <view class="admin-row" data-id="{{item._id}}" bindtap="handleOpenManager">
+      <image wx:if="{{item.avatarUrl}}" class="avatar" src="{{item.avatarUrl}}" mode="aspectFill" />
+      <view wx:else class="avatar avatar-text">{{item.initial}}</view>
+      <view class="admin-main">
+        <view class="admin-name">{{item.nickname}}</view>
+        <view wx:if="{{item.phone}}" class="admin-desc">{{item.phone}}</view>
+      </view>
+      <view class="scope-count">管理{{item.scopeCount || 0}}个会员</view>
+      <view class="arrow">›</view>
+    </view>
+  </block>
+
+  <view wx:if="{{!loading && !superAdmins.length && !managers.length}}" class="empty-text">暂无管理员配置</view>
+</view>

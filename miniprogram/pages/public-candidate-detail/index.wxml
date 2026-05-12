@@ -1,0 +1,73 @@
+<view class="public-detail-page">
+  <view wx:if="{{loading}}" class="muted loading">加载中...</view>
+
+  <view wx:if="{{candidate}}" class="detail-content">
+    <view class="hero-card">
+      <swiper
+        wx:if="{{candidate.displayPhotos.length}}"
+        class="hero-swiper"
+        current="{{currentPhotoIndex}}"
+        circular="{{candidate.displayPhotos.length > 1}}"
+        bindchange="handlePhotoChange"
+      >
+        <block wx:for="{{candidate.displayPhotos}}" wx:key="value">
+          <swiper-item>
+            <view class="hero-photo-wrap" bindtap="handlePreviewPhoto">
+              <image class="hero-photo" src="{{item.value}}" mode="aspectFill" />
+            </view>
+          </swiper-item>
+        </block>
+      </swiper>
+      <view wx:else class="hero-empty">暂无照片</view>
+
+      <view class="hero-tags">
+        <text wx:if="{{candidate.gender}}" class="hero-tag">{{candidate.gender}}</text>
+        <text wx:if="{{candidate.age}}" class="hero-tag">{{candidate.age}}岁</text>
+        <text wx:if="{{candidate.occupation}}" class="hero-tag">{{candidate.occupation}}</text>
+        <text wx:if="{{candidate.education}}" class="hero-tag">{{candidate.education}}</text>
+        <text wx:for="{{candidate.tags}}" wx:key="*this" class="hero-tag">{{item}}</text>
+      </view>
+
+      <view wx:if="{{candidate.displayPhotos.length > 1}}" class="photo-dots">
+        <text wx:for="{{candidate.displayPhotos}}" wx:key="*this" class="{{index === currentPhotoIndex ? 'dot active' : 'dot'}}"></text>
+      </view>
+    </view>
+
+    <view class="info-card">
+      <view class="card-head">
+        <view>
+          <view class="section-title">公开会员资料</view>
+          <view class="muted">编号：{{candidate.candidateCode || '-'}}</view>
+        </view>
+        <text class="permission-pill">公开分享</text>
+      </view>
+
+      <view class="grid-two">
+        <view><text class="muted">性别</text><view>{{candidate.gender || '未知'}}</view></view>
+        <view><text class="muted">生于</text><view>{{candidate.birthYear || '-'}}</view></view>
+        <view><text class="muted">年龄</text><view>{{candidate.age || '-'}}</view></view>
+        <view><text class="muted">属相</text><view>{{candidate.zodiac || '-'}}</view></view>
+        <view><text class="muted">身高</text><view>{{candidate.heightCm || '-'}} cm</view></view>
+        <view><text class="muted">体重</text><view>{{candidate.weightKg || '-'}} kg</view></view>
+        <view><text class="muted">学历</text><view>{{candidate.education || '-'}}</view></view>
+        <view><text class="muted">职业</text><view>{{candidate.occupation || '-'}}</view></view>
+        <view><text class="muted">祖籍</text><view>{{candidate.ancestralHome || '-'}}</view></view>
+        <view><text class="muted">宗教</text><view>{{candidate.religion || '-'}}</view></view>
+      </view>
+    </view>
+
+    <view class="info-card">
+      <view class="section-title">资料摘要</view>
+      <view class="summary-line">性格：{{candidate.personality || '暂无性格描述'}}</view>
+      <view class="summary-line">爱好：{{candidate.hobbies.length ? candidate.hobbies.join('、') : '暂无'}}</view>
+      <view class="summary-block two-line-summary">
+        <text class="summary-block-label">家庭情况：</text>
+        <text class="summary-block-content">{{candidate.familyBackground || '暂无'}}</text>
+      </view>
+      <view class="summary-block two-line-summary">
+        <text class="summary-block-label">择偶要求：</text>
+        <text class="summary-block-content muted">{{candidate.matchRequirements || '暂无'}}</text>
+      </view>
+    </view>
+  </view>
+</view>

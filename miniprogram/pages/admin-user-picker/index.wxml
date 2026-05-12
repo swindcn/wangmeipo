@@ -1,0 +1,29 @@
+<view class="picker-page">
+  <view class="search-row">
+    <input
+      class="search-input"
+      placeholder="输入昵称或手机号搜索"
+      value="{{keyword}}"
+      confirm-type="search"
+      bindinput="handleKeywordInput"
+      bindconfirm="searchUsers"
+    />
+    <button class="search-button" bindtap="searchUsers">搜索</button>
+  </view>
+
+  <view class="user-list">
+    <block wx:for="{{users}}" wx:key="_id">
+      <view class="user-row" data-id="{{item._id}}" bindtap="handleSelectUser">
+        <image wx:if="{{item.avatarUrl}}" class="avatar" src="{{item.avatarUrl}}" mode="aspectFill" />
+        <view wx:else class="avatar avatar-text">{{item.initial}}</view>
+        <view class="user-main">
+          <view class="user-name">{{item.nickname}}</view>
+          <view wx:if="{{item.phone}}" class="user-phone">{{item.phone}}</view>
+        </view>
+        <view class="{{item.checked ? 'check checked' : 'check'}}">✓</view>
+      </view>
+    </block>
+  </view>
+
+  <button class="confirm-button" loading="{{saving}}" disabled="{{saving}}" bindtap="handleConfirm">确定选择</button>
+</view>

@@ -1,0 +1,155 @@
+page {
+  background: #ffffff;
+}
+
+button {
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+  border: none;
+}
+
+button::after {
+  border: none;
+}
+
+.candidate-picker-page {
+  min-height: 100vh;
+  padding: 22rpx 20rpx 120rpx;
+  background: #ffffff;
+  box-sizing: border-box;
+}
+
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin-bottom: 18rpx;
+}
+
+.filter-label {
+  color: #333333;
+  font-size: 26rpx;
+}
+
+.gender-chip {
+  min-width: 58rpx;
+  height: 36rpx;
+  padding: 0 14rpx;
+  border-radius: 6rpx;
+  background: #cfcfcf;
+  color: #ffffff;
+  font-size: 22rpx;
+  font-weight: 800;
+  line-height: 36rpx;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.gender-chip.active {
+  background: #df8391;
+}
+
+.search-row {
+  display: flex;
+  gap: 18rpx;
+  margin-bottom: 18rpx;
+}
+
+.search-input {
+  flex: 1;
+  height: 72rpx;
+  padding: 0 20rpx;
+  border: 1rpx solid #cccccc;
+  border-radius: 6rpx;
+  color: #333333;
+  font-size: 25rpx;
+  box-sizing: border-box;
+}
+
+.search-button {
+  width: 72rpx;
+  height: 72rpx;
+  min-width: 0;
+  flex: 0 0 72rpx;
+  border-radius: 6rpx;
+  background: #df8391;
+  color: #ffffff;
+  font-size: 27rpx;
+  font-weight: 800;
+  line-height: 72rpx;
+}
+
+.candidate-row {
+  min-height: 100rpx;
+  display: flex;
+  align-items: center;
+  padding: 10rpx 8rpx;
+  border-bottom: 1rpx solid #eeeeee;
+  box-sizing: border-box;
+}
+
+.candidate-photo {
+  width: 62rpx;
+  height: 62rpx;
+  flex-shrink: 0;
+  border-radius: 8rpx;
+  background: #f1e6dc;
+}
+
+.placeholder {
+  color: #9a6b48;
+  font-size: 24rpx;
+  font-weight: 800;
+  line-height: 62rpx;
+  text-align: center;
+}
+
+.candidate-main {
+  flex: 1;
+  min-width: 0;
+  margin-left: 18rpx;
+}
+
+.candidate-title,
+.candidate-meta {
+  color: #333333;
+  font-size: 25rpx;
+  font-weight: 700;
+  line-height: 32rpx;
+}
+
+.candidate-meta {
+  font-weight: 600;
+}
+
+.check {
+  width: 30rpx;
+  height: 30rpx;
+  border-radius: 50%;
+  background: #bdbdbd;
+  color: #ffffff;
+  font-size: 20rpx;
+  font-weight: 900;
+  line-height: 30rpx;
+  text-align: center;
+}
+
+.check.checked {
+  background: #df8391;
+}
+
+.confirm-button {
+  position: fixed;
+  left: 50%;
+  bottom: 44rpx;
+  width: 150rpx;
+  height: 58rpx;
+  transform: translateX(-50%);
+  border-radius: 6rpx;
+  background: #df8391;
+  color: #ffffff;
+  font-size: 24rpx;
+  font-weight: 800;
+  line-height: 58rpx;
+}

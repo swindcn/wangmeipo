@@ -1,0 +1,22 @@
+<view class="my-list-page">
+  <view wx:if="{{loading}}" class="empty">{{title}}加载中...</view>
+  <view wx:elif="{{!items.length}}" class="empty">{{emptyText}}</view>
+
+  <view wx:else class="list">
+    <block wx:for="{{items}}" wx:key="_id">
+      <view class="list-row" data-id="{{item.candidateId}}" bindtap="handleOpenCandidate">
+        <image wx:if="{{item.photoUrl}}" class="row-photo {{item.locked ? 'blurred' : ''}}" src="{{item.photoUrl}}" mode="aspectFill" />
+        <view wx:else class="row-photo placeholder">会</view>
+
+        <view class="row-main">
+          <view class="row-title">{{item.title}}</view>
+          <view class="row-line">{{item.subtitle || '会员资料'}}</view>
+          <view class="row-line">{{item.meta || item.updatedAtText}}</view>
+        </view>
+
+        <view class="row-status {{item.statusClass}}">{{item.statusText}}</view>
+        <view class="row-arrow">›</view>
+      </view>
+    </block>
+  </view>
+</view>

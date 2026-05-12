@@ -25,6 +25,10 @@
     "read": "false",
     "write": "false"
   },
+  "candidate_manager_scopes": {
+    "read": "false",
+    "write": "false"
+  },
   "share_tokens": {
     "read": "false",
     "write": "false"

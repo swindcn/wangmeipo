@@ -1,0 +1,133 @@
+page {
+  background: #ffffff;
+}
+
+.messages-page {
+  min-height: 100vh;
+  padding: 18rpx 0 150rpx;
+  background: #ffffff;
+  box-sizing: border-box;
+}
+
+.request-list {
+  border-top: 1rpx solid #f0f0f0;
+}
+
+.request-row {
+  min-height: 132rpx;
+  display: flex;
+  align-items: center;
+  padding: 18rpx 24rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+  box-sizing: border-box;
+}
+
+.request-photo {
+  width: 92rpx;
+  height: 92rpx;
+  flex-shrink: 0;
+  border-radius: 4rpx;
+  background: #f1e6dc;
+}
+
+.placeholder {
+  color: #9a6b48;
+  font-size: 26rpx;
+  font-weight: 900;
+  line-height: 92rpx;
+  text-align: center;
+}
+
+.request-main {
+  flex: 1;
+  min-width: 0;
+  margin-left: 18rpx;
+}
+
+.request-title {
+  color: #171717;
+  font-size: 28rpx;
+  font-weight: 700;
+  line-height: 38rpx;
+}
+
+.request-line {
+  margin-top: 4rpx;
+  color: #333333;
+  font-size: 24rpx;
+  line-height: 34rpx;
+}
+
+.chevron {
+  width: 34rpx;
+  color: #b7b7b7;
+  font-size: 54rpx;
+  line-height: 54rpx;
+  text-align: right;
+}
+
+.empty-text {
+  padding: 160rpx 24rpx;
+  color: #999999;
+  font-size: 28rpx;
+  text-align: center;
+}
+
+.bottom-tabs {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 118rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  background: #ffffff;
+  border-top: 1rpx solid #dddddd;
+  box-shadow: 0 -8rpx 22rpx rgba(0, 0, 0, 0.05);
+  z-index: 10;
+}
+
+.tab-item {
+  width: 20%;
+  height: 118rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #8d8d8d;
+  font-size: 22rpx;
+  font-weight: 700;
+}
+
+.tab-icon-image {
+  width: 46rpx;
+  height: 46rpx;
+  display: block;
+}
+
+.tab-label {
+  margin-top: 4rpx;
+}
+
+.tab-item.active {
+  color: #e5798c;
+}
+
+.tab-upload {
+  transform: translateY(-28rpx);
+}
+
+.tab-upload .tab-icon-image {
+  width: 116rpx;
+  height: 116rpx;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1rpx solid #dddddd;
+  box-shadow: 0 -8rpx 24rpx rgba(0, 0, 0, 0.05);
+}
+
+.tab-upload .tab-label {
+  margin-top: 0;
+  color: #262626;
+}

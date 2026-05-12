@@ -48,6 +48,26 @@ async function bootstrapCloudDatabase() {
   return unwrapResult(response)
 }
 
+async function askMatchmaker(payload) {
+  const response = await callCloudFunction("askMatchmaker", payload)
+  return unwrapResult(response)
+}
+
+async function loadAskMatchmakerChat() {
+  const response = await callCloudFunction("askMatchmaker", {
+    action: "loadChat",
+  })
+  return unwrapResult(response)
+}
+
+async function saveAskMatchmakerChat(payload) {
+  const response = await callCloudFunction("askMatchmaker", {
+    action: "saveChat",
+    ...(payload || {}),
+  })
+  return unwrapResult(response)
+}
+
 async function setCurrentViewer(viewerId) {
   const app = getApp()
   app.globalData.currentViewerId = viewerId
@@ -73,17 +93,41 @@ async function listHomeCandidates() {
   }
 }
 
+async function searchHomeCandidates(keyword) {
+  try {
+    return await listCandidates({
+      filter: "published",
+      keyword,
+      limit: 30,
+      includePhotos: true,
+    })
+  } catch (error) {
+    return []
+  }
+}
+
 async function getCandidateDetail(candidateId, options) {
   const response = await callCloudFunction("getCandidateDetail", {
     mode: "detail",
     candidateId,
     shareToken: options && options.shareToken ? options.shareToken : "",
+    source: options && options.source ? options.source : "",
   })
   return unwrapResult(response).item || null
 }
 
 async function listReviewQueue(params) {
   const response = await callCloudFunction("listReviewQueue", params || {})
+  return unwrapResult(response).items || []
+}
+
+async function listCandidateSubscriptions(params) {
+  const response = await callCloudFunction("listCandidateSubscriptions", params || {})
+  return unwrapResult(response).items || []
+}
+
+async function listDeletedCandidates(params) {
+  const response = await callCloudFunction("listDeletedCandidates", params || {})
   return unwrapResult(response).items || []
 }
 
@@ -115,9 +159,9 @@ async function saveMatchRecord(payload) {
   return unwrapResult(response)
 }
 
-async function listMyAccess() {
-  const response = await callCloudFunction("listMyAccess")
-  return unwrapResult(response).items || []
+async function listMyAccess(params) {
+  const response = await callCloudFunction("listMyAccess", params || {})
+  return unwrapResult(response)
 }
 
 async function createShareToken(payload) {
@@ -140,7 +184,23 @@ async function upsertCurrentUser(payload) {
   return unwrapResult(response)
 }
 
+async function setCandidateSubscription(payload) {
+  const response = await callCloudFunction("setCandidateSubscription", payload)
+  return unwrapResult(response)
+}
+
+async function manageAdminSettings(payload) {
+  const response = await callCloudFunction("manageAdminSettings", payload)
+  return unwrapResult(response)
+}
+
+async function manageViewRequests(payload) {
+  const response = await callCloudFunction("manageViewRequests", payload)
+  return unwrapResult(response)
+}
+
 module.exports = {
+  askMatchmaker,
   bootstrapCloudDatabase,
   createShareToken,
   getCandidateDetail,
@@ -148,12 +208,20 @@ module.exports = {
   getMatchData,
   getPermissionData,
   grantPermission,
+  listCandidateSubscriptions,
+  listDeletedCandidates,
   listHomeCandidates,
+  loadAskMatchmakerChat,
   listCandidates,
   listMyAccess,
   listReviewQueue,
+  manageViewRequests,
+  manageAdminSettings,
   reviewCandidate,
   saveMatchRecord,
+  saveAskMatchmakerChat,
+  searchHomeCandidates,
+  setCandidateSubscription,
   setCurrentViewer,
   parseCandidateText,
   submitCandidateProfile,

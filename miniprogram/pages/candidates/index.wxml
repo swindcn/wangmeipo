@@ -1,11 +1,32 @@
 <view class="manage-page">
-  <view class="menu-list">
-    <block wx:for="{{menuItems}}" wx:key="key">
-      <view class="menu-row" data-key="{{item.key}}" bindtap="handleMenuTap">
-        <view class="{{item.iconClass}}">{{item.icon}}</view>
-        <view class="menu-label">{{item.label}}</view>
-        <view wx:if="{{item.badge}}" class="menu-badge">{{item.badge}}</view>
-        <view class="menu-arrow">›</view>
+  <view class="manage-nav" style="height: {{navTopGap}}rpx;">
+    <view class="manage-nav-title">懂管理</view>
+  </view>
+
+  <view class="manage-content" style="padding-top: {{navTopGap}}rpx;">
+    <view class="menu-list">
+      <block wx:for="{{menuItems}}" wx:key="key">
+        <view class="menu-row" data-key="{{item.key}}" bindtap="handleMenuTap">
+          <view class="{{item.iconClass}}">
+            <image class="menu-icon-image" src="{{item.iconUrl}}" mode="aspectFit" />
+          </view>
+          <view class="menu-label">{{item.label}}</view>
+          <view wx:if="{{item.badge}}" class="menu-badge">{{item.badge}}</view>
+          <image class="menu-arrow-image" src="../../assets/icons/common-chevron-right.png" mode="aspectFit" />
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <view class="bottom-tabs">
+    <block wx:for="{{tabItems}}" wx:key="key">
+      <view
+        class="{{item.className}}"
+        data-key="{{item.key}}"
+        bindtap="handleTabTap"
+      >
+        <image class="tab-icon-image" src="{{item.currentIconUrl}}" mode="aspectFit" />
+        <view class="tab-label">{{item.label}}</view>
       </view>
     </block>
   </view>

@@ -1,0 +1,158 @@
+page {
+  background: #ffffff;
+}
+
+.scope-page {
+  min-height: 100vh;
+  padding-bottom: 112rpx;
+  background: #ffffff;
+}
+
+.manager-row {
+  height: 92rpx;
+  display: flex;
+  align-items: center;
+  padding: 0 24rpx;
+  border-bottom: 1rpx solid #eeeeee;
+  box-sizing: border-box;
+}
+
+.plus-box {
+  width: 48rpx;
+  height: 48rpx;
+  flex-shrink: 0;
+  background: #c9c9c9;
+  color: #ffffff;
+  font-size: 40rpx;
+  font-weight: 700;
+  line-height: 44rpx;
+  text-align: center;
+}
+
+.avatar,
+.candidate-photo {
+  width: 58rpx;
+  height: 58rpx;
+  flex-shrink: 0;
+  border-radius: 8rpx;
+  background: #f1e6dc;
+}
+
+.avatar-text,
+.placeholder {
+  color: #9a6b48;
+  font-size: 24rpx;
+  font-weight: 800;
+  line-height: 58rpx;
+  text-align: center;
+}
+
+.manager-name {
+  flex: 1;
+  margin-left: 22rpx;
+  color: #555555;
+  font-size: 28rpx;
+  font-weight: 700;
+}
+
+.arrow {
+  color: #999999;
+  font-size: 44rpx;
+  font-weight: 200;
+}
+
+.section-row {
+  height: 78rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24rpx;
+  box-sizing: border-box;
+}
+
+.section-title {
+  color: #555555;
+  font-size: 27rpx;
+}
+
+.add-link {
+  color: #d95d70;
+  font-size: 25rpx;
+  font-weight: 700;
+}
+
+.candidate-row {
+  min-height: 94rpx;
+  display: flex;
+  align-items: center;
+  padding: 10rpx 24rpx;
+  border-bottom: 1rpx solid #eeeeee;
+  box-sizing: border-box;
+}
+
+.candidate-main {
+  flex: 1;
+  min-width: 0;
+  margin-left: 18rpx;
+}
+
+.candidate-title,
+.candidate-meta {
+  color: #333333;
+  font-size: 25rpx;
+  font-weight: 700;
+  line-height: 32rpx;
+}
+
+.candidate-meta {
+  font-weight: 600;
+}
+
+.remove {
+  width: 48rpx;
+  color: #999999;
+  font-size: 34rpx;
+  line-height: 48rpx;
+  text-align: center;
+}
+
+.bottom-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 90rpx;
+  display: flex;
+  align-items: center;
+  padding: 0 20rpx;
+  border-top: 1rpx solid #dddddd;
+  background: #ffffff;
+  box-sizing: border-box;
+}
+
+.count-text {
+  flex: 1;
+  color: #666666;
+  font-size: 25rpx;
+}
+
+.count-text text,
+.delete-text {
+  color: #d95d70;
+}
+
+.delete-text {
+  margin-right: 28rpx;
+  font-size: 25rpx;
+}
+
+.save-button {
+  width: 138rpx;
+  height: 58rpx;
+  border-radius: 6rpx;
+  background: #df8391;
+  color: #ffffff;
+  font-size: 24rpx;
+  font-weight: 800;
+  line-height: 58rpx;
+}

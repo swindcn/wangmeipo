@@ -1,4 +1,9 @@
-const { bootstrapCloudDatabase, listHomeCandidates, upsertCurrentUser } = require("../../utils/api")
+const {
+  bootstrapCloudDatabase,
+  listHomeCandidates,
+  searchHomeCandidates,
+  upsertCurrentUser,
+} = require("../../utils/api")
 
 const fallbackProfiles = [
   {
@@ -84,11 +89,11 @@ const fallbackProfiles = [
 ]
 
 const tabItems = [
-  { key: "home", label: "汇匹配", icon: "❤", className: "tab-item active" },
-  { key: "manage", label: "懂管理", icon: "▦", className: "tab-item" },
-  { key: "upload", label: "传资料", icon: "+", className: "tab-item tab-upload" },
-  { key: "matches", label: "汇匹配", icon: "♡", className: "tab-item" },
-  { key: "mine", label: "汇匹配", icon: "♥", className: "tab-item" },
+  { key: "home", label: "汇匹配", iconUrl: "../../assets/icons/tab-home.png", activeIconUrl: "../../assets/icons/tab-home-active.png", currentIconUrl: "../../assets/icons/tab-home-active.png", className: "tab-item active" },
+  { key: "assistant", label: "问美媒", iconUrl: "../../assets/icons/tab-assistant.png", activeIconUrl: "../../assets/icons/tab-assistant-active.png", currentIconUrl: "../../assets/icons/tab-assistant.png", className: "tab-item" },
+  { key: "upload", label: "传资料", iconUrl: "../../assets/icons/tab-upload.png", activeIconUrl: "../../assets/icons/tab-upload.png", currentIconUrl: "../../assets/icons/tab-upload.png", className: "tab-item tab-upload" },
+  { key: "manage", label: "懂管理", iconUrl: "../../assets/icons/tab-manage.png", activeIconUrl: "../../assets/icons/tab-manage-active.png", currentIconUrl: "../../assets/icons/tab-manage.png", className: "tab-item" },
+  { key: "mine", label: "我的", iconUrl: "../../assets/icons/tab-mine.png", activeIconUrl: "../../assets/icons/tab-mine-active.png", currentIconUrl: "../../assets/icons/tab-mine.png", className: "tab-item" },
 ]
 
 let homeProfilesCache = null
@@ -101,11 +106,30 @@ function cleanRegisterNickname(nickname) {
   return SYSTEM_NICKNAMES.includes(text) ? "" : text
 }
 
+function formatHitReasonTag(reason) {
+  const text = String(reason || "")
+  const parts = text.split("命中：")
+  if (parts.length < 2) {
+    return text
+  }
+
+  const fieldName = parts[0]
+  const matchedText = parts.slice(1).join("命中：")
+  if (fieldName === "标签") {
+    return matchedText
+  }
+
+  return `${fieldName} ${matchedText}`
+}
+
 function normalizeProfile(candidate, index) {
   const tags = []
   if (candidate.ancestralHome) tags.push(candidate.ancestralHome)
   if (candidate.occupation) tags.push(candidate.occupation)
   if (candidate.education && tags.length < 2) tags.push(candidate.education)
+  if (Array.isArray(candidate.hitReasons) && candidate.hitReasons.length > 0) {
+    tags.unshift(formatHitReasonTag(candidate.hitReasons[0]))
+  }
 
   return {
     _id: candidate._id || `candidate-${index}`,
@@ -115,6 +139,8 @@ function normalizeProfile(candidate, index) {
     genderIcon: candidate.gender === "男" ? "♂" : "♀",
     genderClass: candidate.gender === "男" ? "male" : "female",
     tags: tags.length > 0 ? tags.slice(0, 2) : ["待完善"],
+    canViewPhotos: Boolean(candidate.canViewPhotos),
+    isPrivateLocked: !candidate.canViewPhotos,
     imageUrl: candidate.photoUrls && candidate.photoUrls[0] ? candidate.photoUrls[0] : fallbackProfiles[index % fallbackProfiles.length].imageUrl,
   }
 }
@@ -124,12 +150,15 @@ Page({
     keyword: "",
     leftProfiles: [],
     rightProfiles: [],
+    profileOrder: [],
     tabItems,
     activeTab: "home",
     initTapCount: 0,
     hasLoadedProfiles: false,
     loadingProfiles: false,
     refresherTriggered: false,
+    headerTopGap: 88,
+    profileScrollHeight: 520,
     authModalVisible: false,
     registering: false,
     registerProfile: {
@@ -140,11 +169,77 @@ Page({
       initial: "提",
     },
   },
+  onLoad() {
+    this.initHeaderMetrics()
+  },
   onShow() {
     this.syncRegisterProfile()
+    this.applyPendingDeletedCandidates()
+    const app = getApp()
+    if (app.globalData.homeProfilesDirty) {
+      app.globalData.homeProfilesDirty = false
+      this.refreshHomeProfiles()
+      return
+    }
+
     if (!this.data.hasLoadedProfiles) {
       this.loadProfiles()
     }
+  },
+  applyPendingDeletedCandidates() {
+    const app = getApp()
+    const deletedCandidateIds = app.globalData.deletedCandidateIds || []
+    if (deletedCandidateIds.length === 0) {
+      return
+    }
+
+    const deletedIdSet = deletedCandidateIds.reduce((result, id) => {
+      result[String(id)] = true
+      return result
+    }, {})
+    const currentItems = this.data.profileOrder.length > 0
+      ? this.data.profileOrder
+      : this.data.leftProfiles.concat(this.data.rightProfiles)
+    const visibleItems = currentItems.filter((item) => !deletedIdSet[String(item._id)])
+
+    if (homeProfilesCache) {
+      homeProfilesCache = homeProfilesCache.filter((item) => !deletedIdSet[String(item._id)])
+      homeProfilesCacheAt = Date.now()
+    }
+
+    app.globalData.deletedCandidateIds = []
+
+    if (currentItems.length !== visibleItems.length) {
+      this.setWaterfall(visibleItems, { fromCache: true })
+    }
+  },
+  initHeaderMetrics() {
+    const menuButton = wx.getMenuButtonBoundingClientRect ? wx.getMenuButtonBoundingClientRect() : null
+    const windowInfo = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync()
+    const windowWidth = windowInfo.windowWidth || 375
+    const rpxToPx = (rpx) => rpx * windowWidth / 750
+    const pxToRpx = (px) => px * 750 / windowWidth
+    let topGapPx
+
+    if (!menuButton || !menuButton.bottom) {
+      topGapPx = (windowInfo.statusBarHeight || 20) + 44
+    } else {
+      const bottomGapPx = 8
+      topGapPx = menuButton.bottom + bottomGapPx
+    }
+
+    const headerHeightPx = rpxToPx(58)
+    const searchHeightPx = rpxToPx(102)
+    const bottomTabsHeightPx = rpxToPx(118)
+    const profileScrollHeight = Math.max(
+      320,
+      Math.floor((windowInfo.windowHeight || 667) - topGapPx - headerHeightPx - searchHeightPx - bottomTabsHeightPx),
+    )
+
+    this.setData({
+      headerTopGap: Math.ceil(pxToRpx(topGapPx)),
+      profileScrollHeight,
+    })
   },
   syncRegisterProfile() {
     const app = getApp()
@@ -228,6 +323,7 @@ Page({
     this.setData({
       leftProfiles,
       rightProfiles,
+      profileOrder: items,
       hasLoadedProfiles: true,
       loadingProfiles: options.fromCache ? this.data.loadingProfiles : false,
     })
@@ -237,6 +333,7 @@ Page({
       activeTab,
       tabItems: tabItems.map((item) => ({
         ...item,
+        currentIconUrl: item.key === activeTab ? item.activeIconUrl : item.iconUrl,
         className: [
           "tab-item",
           item.key === "upload" ? "tab-upload" : "",
@@ -248,13 +345,27 @@ Page({
   handleSearchInput(event) {
     this.setData({ keyword: event.detail.value })
   },
-  handleSearch() {
+  async handleSearch() {
     const keyword = this.data.keyword.trim()
-    const items = fallbackProfiles.filter((item) => {
-      if (!keyword) return true
-      return [item.name, String(item.age), ...item.tags].some((text) => text.includes(keyword))
-    })
-    this.setWaterfall(items)
+    if (!keyword) {
+      await this.refreshHomeProfiles()
+      return
+    }
+
+    this.setData({ loadingProfiles: true })
+    try {
+      const candidates = await searchHomeCandidates(keyword)
+      const source = candidates.map((item, index) => normalizeProfile(item, index))
+      this.setWaterfall(source)
+      if (source.length === 0) {
+        wx.showToast({ title: "未找到匹配会员", icon: "none" })
+      }
+    } catch (error) {
+      wx.showToast({ title: "搜索失败", icon: "none" })
+      console.error(error)
+    } finally {
+      this.setData({ loadingProfiles: false })
+    }
   },
   async handleBrandTap() {
     const initTapCount = this.data.initTapCount + 1
@@ -300,17 +411,17 @@ Page({
     }
 
     if (key === "manage") {
-      wx.navigateTo({ url: "/pages/candidates/index" })
+      wx.redirectTo({ url: "/pages/candidates/index" })
       return
     }
 
-    if (key === "matches") {
-      wx.navigateTo({ url: "/pages/match-records/index" })
+    if (key === "assistant") {
+      wx.redirectTo({ url: "/pages/ask-matchmaker/index" })
       return
     }
 
     if (key === "mine") {
-      wx.navigateTo({ url: "/pages/my-access/index" })
+      wx.redirectTo({ url: "/pages/my-access/index" })
       return
     }
 

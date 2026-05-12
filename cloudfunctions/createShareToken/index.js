@@ -24,27 +24,69 @@ async function resolveCurrentUser(event = {}) {
   return result.data[0] || null
 }
 
-async function requireManager(event = {}) {
-  const currentUser = await resolveCurrentUser(event)
+async function isScopedManager(currentUser, candidateId) {
+  if (!currentUser || !candidateId || currentUser.role !== "manager") {
+    return false
+  }
 
-  if (!currentUser || (currentUser.role !== "manager" && currentUser.role !== "super_admin")) {
+  const result = await db.collection("candidate_manager_scopes").where({
+    managerUserId: currentUser._id,
+    candidateId,
+    status: "active",
+  }).limit(1).get()
+
+  return result.data.length > 0
+}
+
+async function requireKeyActionUser(event = {}) {
+  const currentUser = await resolveCurrentUser(event)
+  const candidateId = event.candidateId || ""
+
+  if (!currentUser || !candidateId) {
     throw new Error("forbidden")
   }
 
-  return currentUser
+  if (currentUser.role === "super_admin") {
+    return currentUser
+  }
+
+  if (await isScopedManager(currentUser, candidateId)) {
+    return currentUser
+  }
+
+  throw new Error("forbidden")
+}
+
+function resolveSharePage(permissionLevel) {
+  if (permissionLevel === "public_full") {
+    return "public-candidate-detail"
+  }
+
+  return "candidate-detail"
+}
+
+function validatePermissionLevel(permissionLevel) {
+  const allowedLevels = ["text_only", "text_with_photo", "full_profile_no_contact", "public_full"]
+  if (!allowedLevels.includes(permissionLevel)) {
+    throw new Error("forbidden")
+  }
 }
 
 exports.main = async (event) => {
   const now = new Date()
   const token = randomUUID().replace(/-/g, "")
-  const currentUser = await requireManager(event)
+  const permissionLevel = event.permissionLevel || "text_only"
+  validatePermissionLevel(permissionLevel)
+
+  const currentUser = await requireKeyActionUser(event)
+  const sharePage = resolveSharePage(permissionLevel)
 
   await db.collection("share_tokens").add({
     data: {
       token,
       candidateId: event.candidateId,
       createdBy: currentUser._id,
-      permissionLevel: event.permissionLevel || "text_only",
+      permissionLevel,
       expiresAt: event.expiresAt || null,
       useCount: 0,
       maxUseCount: event.maxUseCount || 1,
@@ -56,6 +98,6 @@ exports.main = async (event) => {
   return {
     ok: true,
     token,
-    sharePath: `/pages/candidate-detail/index?id=${event.candidateId}&shareToken=${token}`,
+    sharePath: `/pages/${sharePage}/index?id=${event.candidateId}&shareToken=${token}`,
   }
 }

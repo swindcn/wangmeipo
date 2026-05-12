@@ -11,6 +11,7 @@
 
   <view class="edit-card parse-card">
     <view class="parse-action-row">
+      <view class="parse-title">AI识别！</view>
       <view class="parse-button" bindtap="handleParseText">解析</view>
     </view>
     <textarea
@@ -24,17 +25,17 @@
   <view class="edit-card">
     <view class="card-head">
       <view class="card-title">{{form.name || '会员资料'}}</view>
-      <view class="status-pill">{{mode === 'review' ? '待审核' : reviewStatus}}</view>
+      <view wx:if="{{reviewStatusText}}" class="status-pill">{{reviewStatusText}}</view>
     </view>
 
     <view class="edit-grid">
       <view class="edit-field">
-        <view class="field-label">编号</view>
+        <view class="field-label">姓名</view>
         <input class="line-input" value="{{form.name}}" data-field="name" bindinput="handleFieldInput" placeholder="请输入姓名" />
       </view>
       <view class="edit-field">
         <view class="field-label">出生</view>
-        <input class="line-input" value="{{form.birthYear}}" data-field="birthYear" bindinput="handleFieldInput" placeholder="未填写" />
+        <input class="line-input" value="{{form.birthYear}}" data-field="birthYear" bindinput="handleFieldInput" bindblur="handleDerivedFieldBlur" placeholder="未填写" />
       </view>
       <view class="edit-field">
         <view class="field-label">性别</view>
@@ -44,7 +45,7 @@
       </view>
       <view class="edit-field">
         <view class="field-label">年龄</view>
-        <input class="line-input" value="{{form.age}}" data-field="age" bindinput="handleFieldInput" placeholder="未填写" />
+        <input class="line-input" value="{{form.age}}" data-field="age" bindinput="handleFieldInput" bindblur="handleDerivedFieldBlur" placeholder="未填写" />
       </view>
       <view class="edit-field">
         <view class="field-label">身高</view>
@@ -86,16 +87,16 @@
   <view class="edit-card">
     <view class="card-title">资料摘要</view>
     <view class="summary-row">
-      <view class="summary-label">性格：</view>
+      <view class="summary-label">性　　格：</view>
       <input class="summary-input" value="{{form.personality}}" data-field="personality" bindinput="handleFieldInput" placeholder="暂无性格描述" />
     </view>
-    <view class="summary-row">
+    <view class="summary-row two-line-row">
       <view class="summary-label">家庭情况：</view>
-      <input class="summary-input" value="{{form.familyBackground}}" data-field="familyBackground" bindinput="handleFieldInput" placeholder="暂无" />
+      <textarea class="summary-textarea two-line-textarea" value="{{form.familyBackground}}" data-field="familyBackground" bindinput="handleFieldInput" placeholder="暂无" />
     </view>
-    <view class="summary-row textarea-row">
+    <view class="summary-row two-line-row">
       <view class="summary-label">择偶要求：</view>
-      <textarea class="summary-textarea" value="{{form.matchRequirements}}" data-field="matchRequirements" bindinput="handleFieldInput" placeholder="暂无" />
+      <textarea class="summary-textarea two-line-textarea" value="{{form.matchRequirements}}" data-field="matchRequirements" bindinput="handleFieldInput" placeholder="暂无" />
     </view>
   </view>
 
@@ -109,9 +110,9 @@
       <view class="summary-label">联系电话：</view>
       <input class="summary-input" value="{{form.phone}}" data-field="phone" bindinput="handleFieldInput" placeholder="当前权限不可见" />
     </view>
-    <view class="summary-row">
+    <view class="summary-row two-line-row">
       <view class="summary-label">房产情况：</view>
-      <input class="summary-input" value="{{form.assets}}" data-field="assets" bindinput="handleFieldInput" placeholder="暂无" />
+      <textarea class="summary-textarea two-line-textarea" value="{{form.assets}}" data-field="assets" bindinput="handleFieldInput" placeholder="暂无" />
     </view>
   </view>
 
