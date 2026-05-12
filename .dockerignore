@@ -1,0 +1,11 @@
+.git
+.DS_Store
+node_modules
+miniprogram/
+cloudfunctions/
+docs/
+scripts/
+services/official-account-webhook/node_modules
+services/official-account-webhook/.env
+services/official-account-webhook/.env.*
+npm-debug.log
