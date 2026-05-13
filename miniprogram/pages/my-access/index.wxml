@@ -13,52 +13,11 @@
         <view class="nickname">{{profile.nickname}}</view>
         <view class="role-text">{{profile.roleText}}</view>
       </view>
-      <button wx:if="{{profileReady && !profile.registered}}" class="quick-auth-button" bindtap="handleRegisterWithoutPhone" loading="{{registering}}" disabled="{{registering}}">授权登录</button>
-    </view>
-
-    <view class="phone-card">
-      <view class="phone-left">
-        <image class="phone-icon-image" src="../../assets/icons/mine-phone.png" mode="aspectFit" />
-        <text class="phone-label">联系方式</text>
+      <button wx:if="{{profileReady && !profile.registered}}" class="quick-auth-button" bindtap="handleLoginTap">立即登录</button>
+      <view wx:if="{{profileReady && profile.registered}}" class="settings-entry" bindtap="handleSettingsTap">
+        <text>个人设置</text>
+        <image class="settings-arrow" src="../../assets/icons/common-chevron-right.png" mode="aspectFit" />
       </view>
-      <text class="phone-value">{{profile.phoneText}}</text>
-    </view>
-
-    <view wx:if="{{profileReady && !profile.registered}}" class="register-card">
-      <view class="register-title">完善微信资料</view>
-      <view class="register-desc">授权头像、昵称和手机号后，可以查看你传的资料、想看的会员和后续互动记录。</view>
-
-      <view class="register-row">
-        <button class="avatar-button" open-type="chooseAvatar" bindchooseavatar="handleChooseAvatar">
-          <image wx:if="{{registerProfile.avatarPreview}}" class="register-avatar-image" src="{{registerProfile.avatarPreview}}" mode="aspectFill" />
-          <view wx:else class="register-avatar-text">{{registerProfile.initial}}</view>
-        </button>
-        <input
-          class="nickname-input"
-          type="nickname"
-          value="{{registerProfile.nickname}}"
-          bindinput="handleNicknameInput"
-          placeholder="填写微信昵称"
-        />
-      </view>
-
-      <input
-        class="phone-input"
-        type="number"
-        value="{{registerProfile.phone}}"
-        bindinput="handlePhoneInput"
-        placeholder="可手动填写手机号"
-      />
-      <button
-        class="phone-auth-button"
-        loading="{{registering}}"
-        disabled="{{registering}}"
-        open-type="getPhoneNumber"
-        bindgetphonenumber="handlePhoneAuth"
-      >
-        微信授权手机号
-      </button>
-      <view class="manual-save" bindtap="handleRegisterWithoutPhone">不授权手机号，保存头像昵称</view>
     </view>
 
     <view class="section-list">

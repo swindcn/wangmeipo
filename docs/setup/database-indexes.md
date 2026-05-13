@@ -5,6 +5,7 @@
 ## `users`
 
 - `openid` 唯一索引
+- `phone` 唯一索引
 - `role + status`
 
 ## `candidates`

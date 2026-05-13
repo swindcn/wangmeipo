@@ -1,0 +1,14 @@
+<view class="password-page">
+  <view class="form-card">
+    <view class="field-row">
+      <text class="field-label">新密码</text>
+      <input class="field-input" password value="{{password}}" bindinput="handlePasswordInput" placeholder="请输入登录密码" />
+    </view>
+    <view class="field-row">
+      <text class="field-label">确认密码</text>
+      <input class="field-input" password value="{{confirmPassword}}" bindinput="handleConfirmInput" placeholder="请再次输入密码" />
+    </view>
+  </view>
+
+  <button class="save-button" loading="{{saving}}" disabled="{{saving}}" bindtap="handleSave">保存密码</button>
+</view>

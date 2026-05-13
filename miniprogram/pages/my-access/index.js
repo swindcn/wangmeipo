@@ -1,4 +1,4 @@
-const { listMyAccess, upsertCurrentUser } = require("../../utils/api")
+const { listMyAccess } = require("../../utils/api")
 
 const tabItems = [
   { key: "home", label: "汇匹配", currentIconUrl: "../../assets/icons/tab-home.png", className: "tab-item" },
@@ -39,19 +39,24 @@ function getRoleText(role) {
 }
 
 function buildCachedProfile(profile = {}) {
+  const accountLoggedIn = Boolean(wx.getStorageSync("accountLoggedIn"))
+  const accountLoggedOut = Boolean(wx.getStorageSync("accountLoggedOut"))
   const nickname = cleanRegisterNickname(profile.nickname)
   const phone = String(profile.phone || "").trim()
   const role = profile.role || getApp().globalData.userRole || "viewer"
-  const registered = Boolean(profile.registered || (profile.avatarUrl && nickname))
+  const hasUserProfile = Boolean(profile.registered || profile.loggedIn || profile._id || phone || nickname || profile.avatarUrl)
+  const cloudRecognizedUser = Boolean(profile.registered || profile._id || phone || profile.role === "super_admin" || profile.role === "manager")
+  const loggedIn = Boolean(!accountLoggedOut && hasUserProfile && (accountLoggedIn || cloudRecognizedUser))
 
   return {
-    registered,
-    nickname: nickname || "游客123456",
+    registered: loggedIn,
+    nickname: loggedIn ? (nickname || "用户") : "游客123456",
     avatarUrl: profile.avatarUrl || "",
     role,
     roleText: profile.roleText || getRoleText(role),
     phone,
     phoneText: profile.phoneText || (phone ? maskPhone(phone) : "未授权"),
+    hasPassword: Boolean(profile.hasPassword),
   }
 }
 
@@ -86,7 +91,6 @@ Page({
     this.initNavMetrics()
     this.applyCachedProfile()
     this.loadSummary()
-    this.syncRegisterProfile()
   },
   initNavMetrics() {
     const menuButton = wx.getMenuButtonBoundingClientRect ? wx.getMenuButtonBoundingClientRect() : null
@@ -106,7 +110,11 @@ Page({
     try {
       const result = await listMyAccess({ action: "summary" })
       const sections = result.sections || {}
-      const profile = result.profile || this.data.profile
+      if (result.profile && result.profile.registered) {
+        wx.removeStorageSync("accountLoggedOut")
+        wx.setStorageSync("accountLoggedIn", true)
+      }
+      const profile = buildCachedProfile(result.profile || this.data.profile)
       this.cacheProfile(profile)
       this.setData({
         profile,
@@ -144,7 +152,7 @@ Page({
       cachedProfile = {}
     }
 
-    const profileSource = globalProfile.registered || globalProfile.avatarUrl || globalProfile.nickname
+    const profileSource = globalProfile.registered || globalProfile.nickname || globalProfile.avatarUrl || cachedProfile.registered
       ? globalProfile
       : cachedProfile
 
@@ -160,6 +168,13 @@ Page({
   },
   cacheProfile(profile) {
     const app = getApp()
+    if (profile && profile.registered && !wx.getStorageSync("accountLoggedOut")) {
+      try {
+        wx.setStorageSync("accountLoggedIn", true)
+      } catch (error) {
+        console.error("缓存登录态失败", error)
+      }
+    }
     const normalizedProfile = buildCachedProfile(profile)
 
     app.globalData.userRole = normalizedProfile.role || app.globalData.userRole
@@ -171,126 +186,15 @@ Page({
       console.error("缓存用户资料失败", error)
     }
   },
-  syncRegisterProfile() {
-    const app = getApp()
-    const profile = app.globalData.currentUserProfile || {}
-    const nickname = cleanRegisterNickname(profile.nickname)
-
-    this.setData({
-      registerProfile: {
-        nickname,
-        avatarUrl: profile.avatarUrl || "",
-        avatarPreview: profile.avatarUrl || "",
-        phone: profile.phone || "",
-        initial: String(nickname || "我").slice(0, 1),
-      },
-    })
+  handleLoginTap() {
+    wx.navigateTo({ url: "/pages/login/index" })
   },
-  getImageExtension(filePath) {
-    const matched = String(filePath || "").match(/\.([a-zA-Z0-9]+)(?:\?|$)/)
-    return matched ? matched[1].toLowerCase() : "jpg"
-  },
-  async handleChooseAvatar(event) {
-    const avatarPreview = event.detail.avatarUrl || ""
-    if (!avatarPreview) return
-
-    this.setData({
-      "registerProfile.avatarPreview": avatarPreview,
-    })
-
-    try {
-      const extension = this.getImageExtension(avatarPreview)
-      const result = await wx.cloud.uploadFile({
-        cloudPath: `user-avatars/${Date.now()}.${extension}`,
-        filePath: avatarPreview,
-      })
-      this.setData({
-        "registerProfile.avatarUrl": result.fileID || avatarPreview,
-      })
-    } catch (error) {
-      this.setData({
-        "registerProfile.avatarUrl": avatarPreview,
-      })
-      console.error(error)
-    }
-  },
-  handleNicknameInput(event) {
-    const nickname = cleanRegisterNickname(event.detail.value)
-    this.setData({
-      "registerProfile.nickname": nickname,
-      "registerProfile.initial": String(nickname || "我").slice(0, 1),
-    })
-  },
-  handlePhoneInput(event) {
-    this.setData({
-      "registerProfile.phone": String(event.detail.value || "").trim(),
-    })
-  },
-  async saveRegisterProfile(options = {}) {
-    const profile = this.data.registerProfile
-
-    if (!profile.avatarUrl) {
-      wx.showToast({ title: "请先选择头像", icon: "none" })
+  handleSettingsTap() {
+    if (!this.data.profile.registered) {
+      this.handleLoginTap()
       return
     }
-
-    if (!profile.nickname) {
-      wx.showToast({ title: "请先填写昵称", icon: "none" })
-      return
-    }
-
-    this.setData({ registering: true })
-    wx.showLoading({ title: "授权中" })
-
-    try {
-      const result = await upsertCurrentUser({
-        profile,
-        phoneCode: options.phoneCode || "",
-      })
-
-      if (!result.ok) {
-        throw new Error(result.error || "register failed")
-      }
-
-      this.applyRegisteredUser(result.user)
-      await this.loadSummary()
-      wx.showToast({ title: "已授权", icon: "success" })
-    } catch (error) {
-      wx.showToast({ title: "授权失败", icon: "none" })
-      console.error(error)
-    } finally {
-      wx.hideLoading()
-      this.setData({ registering: false })
-    }
-  },
-  handlePhoneAuth(event) {
-    if (!event.detail || !event.detail.code) {
-      wx.showToast({ title: "未授权手机号", icon: "none" })
-      return
-    }
-
-    this.saveRegisterProfile({ phoneCode: event.detail.code })
-  },
-  handleRegisterWithoutPhone() {
-    this.saveRegisterProfile()
-  },
-  applyRegisteredUser(user) {
-    const app = getApp()
-    const nickname = cleanRegisterNickname(user && user.nickname ? user.nickname : "")
-    const phone = user && user.phone ? user.phone : ""
-    const role = user && user.role ? user.role : app.globalData.userRole
-
-    app.globalData.userRole = role
-    app.globalData.currentViewerId = user && user._id ? user._id : app.globalData.currentViewerId
-    this.cacheProfile({
-      registered: Boolean(user && user._id && nickname && user.avatarUrl),
-      nickname,
-      avatarUrl: user && user.avatarUrl ? user.avatarUrl : "",
-      phone,
-      role,
-    })
-
-    this.syncRegisterProfile()
+    wx.navigateTo({ url: "/pages/profile-settings/index" })
   },
   handleOpenSection(event) {
     const { key } = event.currentTarget.dataset

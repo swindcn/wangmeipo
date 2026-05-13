@@ -1,0 +1,227 @@
+page {
+  background: #ffffff;
+}
+
+button {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+button::after {
+  border: none;
+}
+
+.settings-page {
+  min-height: 100vh;
+  padding: 72rpx 32rpx 0;
+  background: #ffffff;
+  box-sizing: border-box;
+}
+
+.setting-list {
+  border-top: 1rpx solid #dddddd;
+}
+
+.setting-row {
+  min-height: 92rpx;
+  display: flex;
+  align-items: center;
+  border-bottom: 1rpx solid #dddddd;
+}
+
+.avatar-row {
+  min-height: 142rpx;
+}
+
+.setting-label {
+  width: 150rpx;
+  color: #222222;
+  font-size: 26rpx;
+}
+
+.setting-value {
+  flex: 1;
+  color: #aaaaaa;
+  font-size: 25rpx;
+  text-align: right;
+}
+
+.avatar-button {
+  width: 104rpx;
+  height: 104rpx;
+  margin-left: auto;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #e5e5e5;
+}
+
+.avatar {
+  width: 104rpx;
+  height: 104rpx;
+  border-radius: 50%;
+}
+
+.avatar.placeholder {
+  color: #ffffff;
+  font-size: 42rpx;
+  font-weight: 900;
+  line-height: 104rpx;
+  text-align: center;
+  background: #dddddd;
+}
+
+.arrow {
+  width: 28rpx;
+  height: 28rpx;
+  margin-left: 18rpx;
+  flex-shrink: 0;
+}
+
+.save-button,
+.logout-button {
+  height: 60rpx;
+  margin: 360rpx 38rpx 0;
+  border: 1rpx solid #cccccc;
+  border-radius: 6rpx;
+  background: #ffffff;
+  color: #333333;
+  font-size: 24rpx;
+  line-height: 60rpx;
+}
+
+.save-button {
+  margin-top: 300rpx;
+  border-color: #de8190;
+  color: #de8190;
+}
+
+.logout-button {
+  margin-top: 22rpx;
+}
+
+.modal-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.42);
+}
+
+.nickname-modal,
+.avatar-modal {
+  width: 560rpx;
+  padding: 26rpx 24rpx 34rpx;
+  background: #ffffff;
+  box-sizing: border-box;
+}
+
+.avatar-modal {
+  padding-top: 32rpx;
+}
+
+.modal-title {
+  color: #222222;
+  font-size: 26rpx;
+  line-height: 48rpx;
+  text-align: center;
+}
+
+.modal-input {
+  height: 60rpx;
+  margin-top: 18rpx;
+  border-top: 1rpx solid #cccccc;
+  border-bottom: 1rpx solid #cccccc;
+  color: #333333;
+  font-size: 26rpx;
+  text-align: center;
+}
+
+.modal-link-wrap {
+  margin-top: 58rpx;
+  text-align: center;
+}
+
+.modal-link-wrap .wechat-nickname-input {
+  width: 220rpx;
+  height: 44rpx;
+  margin: 0 auto;
+  border: none;
+  color: #de8190;
+  font-size: 25rpx;
+  text-align: center;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 42rpx;
+  margin-top: 88rpx;
+}
+
+.modal-cancel,
+.modal-save {
+  width: 112rpx;
+  height: 48rpx;
+  border-radius: 6rpx;
+  font-size: 24rpx;
+  line-height: 48rpx;
+}
+
+.modal-cancel {
+  background: #d0d0d0;
+  color: #333333;
+}
+
+.modal-save {
+  background: #de8190;
+  color: #ffffff;
+}
+
+.avatar-preview-wrap {
+  width: 222rpx;
+  height: 222rpx;
+  margin: 36rpx auto 28rpx;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #dddddd;
+}
+
+.avatar-preview {
+  width: 222rpx;
+  height: 222rpx;
+  border-radius: 50%;
+}
+
+.avatar-preview.placeholder {
+  color: #ffffff;
+  font-size: 78rpx;
+  font-weight: 900;
+  line-height: 222rpx;
+  text-align: center;
+  background: #dddddd;
+}
+
+.avatar-select-button,
+.avatar-wechat-button {
+  width: 260rpx;
+  height: 58rpx;
+  margin: 0 auto;
+  border: 1rpx solid #cccccc;
+  border-radius: 0;
+  background: #ffffff;
+  color: #de8190;
+  font-size: 24rpx;
+  line-height: 58rpx;
+}
+
+.avatar-wechat-button {
+  margin-top: 30rpx;
+  border: none;
+}
+
+.avatar-modal .modal-actions {
+  margin-top: 34rpx;
+}

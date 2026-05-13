@@ -1,0 +1,116 @@
+page {
+  background: #ffffff;
+}
+
+button {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+button::after {
+  border: none;
+}
+
+.login-page {
+  min-height: 100vh;
+  background: #ffffff;
+}
+
+.login-hero {
+  height: 590rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0 0 28rpx 28rpx;
+  background: #de8190;
+  box-shadow: 0 4rpx 0 #2f78ff;
+  box-sizing: border-box;
+}
+
+.brand-logo {
+  width: 178rpx;
+  height: 178rpx;
+  border-radius: 50%;
+  background: #ffffff;
+}
+
+.brand-slogan {
+  margin-top: 90rpx;
+  color: #ffffff;
+  font-size: 34rpx;
+  font-weight: 900;
+  letter-spacing: 2rpx;
+}
+
+.login-actions {
+  padding: 104rpx 76rpx 0;
+}
+
+.quick-login-button,
+.phone-login-button {
+  height: 68rpx;
+  border-radius: 6rpx;
+  font-size: 26rpx;
+  line-height: 68rpx;
+  text-align: center;
+}
+
+.quick-login-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14rpx;
+  background: #4f7d22;
+  color: #ffffff;
+  font-weight: 800;
+}
+
+.wechat-icon {
+  color: #ffffff;
+  font-size: 24rpx;
+}
+
+.phone-login-button {
+  margin-top: 72rpx;
+  border: 1rpx solid #cccccc;
+  background: #ffffff;
+  color: #de8190;
+}
+
+.agreement-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  margin-top: 72rpx;
+  color: #b8b8b8;
+  font-size: 22rpx;
+}
+
+.radio {
+  width: 22rpx;
+  height: 22rpx;
+  border: 1rpx solid #bdbdbd;
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+
+.radio.checked {
+  border: 7rpx solid #de8190;
+}
+
+.link {
+  color: #2f78ff;
+}
+
+.login-tip {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 150rpx;
+  color: #888888;
+  font-size: 24rpx;
+  text-align: center;
+}

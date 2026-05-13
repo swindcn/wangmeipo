@@ -18,6 +18,7 @@ FUNCTIONS=(
   "recordMatch"
   "listMyAccess"
   "createShareToken"
+  "manageAccount"
   "manageAdminSettings"
   "upsertCurrentUser"
   "askMatchmaker"

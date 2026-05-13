@@ -1,0 +1,54 @@
+page {
+  background: #ffffff;
+}
+
+button {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+button::after {
+  border: none;
+}
+
+.password-page {
+  min-height: 100vh;
+  padding: 72rpx 32rpx 0;
+  background: #ffffff;
+  box-sizing: border-box;
+}
+
+.form-card {
+  border-top: 1rpx solid #dddddd;
+}
+
+.field-row {
+  height: 96rpx;
+  display: flex;
+  align-items: center;
+  border-bottom: 1rpx solid #dddddd;
+}
+
+.field-label {
+  width: 150rpx;
+  color: #222222;
+  font-size: 26rpx;
+}
+
+.field-input {
+  flex: 1;
+  height: 92rpx;
+  color: #333333;
+  font-size: 26rpx;
+}
+
+.save-button {
+  height: 68rpx;
+  margin: 120rpx 38rpx 0;
+  border-radius: 6rpx;
+  background: #de8190;
+  color: #ffffff;
+  font-size: 26rpx;
+  line-height: 68rpx;
+}

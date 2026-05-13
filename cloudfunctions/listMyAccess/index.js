@@ -207,13 +207,15 @@ function buildProfile(currentUser) {
   const phone = compactString(currentUser && currentUser.phone)
 
   return {
-    registered: Boolean(currentUser && currentUser._id && avatarUrl && nickname && nickname !== "云开发管理员"),
+    _id: currentUser && currentUser._id ? currentUser._id : "",
+    registered: Boolean(currentUser && currentUser._id && phone),
     nickname,
     avatarUrl,
     role: currentUser && currentUser.role ? currentUser.role : "viewer",
     roleText: getRoleText(currentUser && currentUser.role),
     phone,
     phoneText: phone ? maskPhone(phone) : "未授权",
+    hasPassword: Boolean(currentUser && currentUser.passwordHash),
   }
 }
 

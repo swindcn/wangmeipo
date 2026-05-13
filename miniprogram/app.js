@@ -50,14 +50,16 @@ App({
 
       this.globalData.userRole = role
       this.globalData.currentViewerId = currentViewer._id || ""
+      const accountLoggedIn = Boolean(wx.getStorageSync("accountLoggedIn")) && !wx.getStorageSync("accountLoggedOut")
       this.globalData.currentUserProfile = {
-        registered: Boolean(currentViewer._id && currentViewer.avatarUrl && currentViewer.nickname && currentViewer.nickname !== "云开发管理员"),
+        registered: Boolean(accountLoggedIn && currentViewer._id && phone),
         nickname: currentViewer.nickname || "",
         avatarUrl: currentViewer.avatarUrl || "",
         phone,
         phoneText,
         role,
         roleText,
+        hasPassword: Boolean(currentViewer.passwordHash),
       }
       wx.setStorageSync("currentUserProfile", this.globalData.currentUserProfile)
       return currentViewer

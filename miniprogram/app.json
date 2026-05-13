@@ -16,6 +16,10 @@
     "pages/recycle-bin/index",
     "pages/permission-manage/index",
     "pages/match-records/index",
+    "pages/login/index",
+    "pages/phone-login/index",
+    "pages/profile-settings/index",
+    "pages/password-settings/index",
     "pages/my-list/index",
     "pages/my-access/index"
   ],

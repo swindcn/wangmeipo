@@ -199,6 +199,11 @@ async function manageViewRequests(payload) {
   return unwrapResult(response)
 }
 
+async function manageAccount(payload) {
+  const response = await callCloudFunction("manageAccount", payload)
+  return unwrapResult(response)
+}
+
 module.exports = {
   askMatchmaker,
   bootstrapCloudDatabase,
@@ -217,6 +222,7 @@ module.exports = {
   listReviewQueue,
   manageViewRequests,
   manageAdminSettings,
+  manageAccount,
   reviewCandidate,
   saveMatchRecord,
   saveAskMatchmakerChat,

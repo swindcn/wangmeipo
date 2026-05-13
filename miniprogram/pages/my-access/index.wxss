@@ -106,135 +106,29 @@ button::after {
 }
 
 .quick-auth-button {
-  width: 134rpx;
-  height: 58rpx;
+  width: 112rpx;
+  height: 48rpx;
   border-radius: 8rpx;
   background: rgba(255, 255, 255, 0.92);
   color: #de8190;
-  font-size: 26rpx;
+  font-size: 22rpx;
   font-weight: 800;
-  line-height: 58rpx;
+  line-height: 48rpx;
 }
 
-.phone-card {
-  height: 92rpx;
+.settings-entry {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin: 26rpx 28rpx 0;
-  padding: 0 34rpx;
-  background: #ffffff;
-  box-sizing: border-box;
-}
-
-.phone-left {
-  display: flex;
-  align-items: center;
-}
-
-.phone-icon-image {
-  width: 40rpx;
-  height: 40rpx;
-  display: block;
-}
-
-.phone-label {
-  margin-left: 26rpx;
-  color: #666666;
-  font-size: 30rpx;
-}
-
-.phone-value {
-  color: #666666;
-  font-size: 28rpx;
-}
-
-.register-card {
-  margin: 24rpx 28rpx 0;
-  padding: 28rpx;
-  border-radius: 12rpx;
-  background: #ffffff;
-  box-sizing: border-box;
-}
-
-.register-title {
-  color: #333333;
-  font-size: 30rpx;
-  font-weight: 900;
-}
-
-.register-desc {
-  margin-top: 8rpx;
-  color: #999999;
-  font-size: 24rpx;
-  line-height: 36rpx;
-}
-
-.register-row {
-  display: flex;
-  align-items: center;
-  margin-top: 22rpx;
-}
-
-.avatar-button {
-  width: 92rpx;
-  height: 92rpx;
-  flex-shrink: 0;
-  border-radius: 50%;
-  overflow: hidden;
-  background: #eeeeee;
-}
-
-.register-avatar-image,
-.register-avatar-text {
-  width: 92rpx;
-  height: 92rpx;
-}
-
-.register-avatar-text {
-  color: #999999;
-  font-size: 34rpx;
-  font-weight: 900;
-  line-height: 92rpx;
-  text-align: center;
-}
-
-.nickname-input,
-.phone-input {
-  height: 72rpx;
-  padding: 0 20rpx;
-  border-radius: 10rpx;
-  background: #f7f7f7;
-  color: #333333;
-  font-size: 27rpx;
-  box-sizing: border-box;
-}
-
-.nickname-input {
-  flex: 1;
-  margin-left: 18rpx;
-}
-
-.phone-input {
-  margin-top: 18rpx;
-}
-
-.phone-auth-button {
-  height: 76rpx;
-  margin-top: 18rpx;
-  border-radius: 12rpx;
-  background: #de8190;
+  gap: 8rpx;
   color: #ffffff;
   font-size: 28rpx;
   font-weight: 800;
-  line-height: 76rpx;
 }
 
-.manual-save {
-  margin-top: 20rpx;
-  color: #888888;
-  font-size: 26rpx;
-  text-align: center;
+.settings-arrow {
+  width: 28rpx;
+  height: 28rpx;
+  filter: brightness(0) invert(1);
 }
 
 .section-list {
