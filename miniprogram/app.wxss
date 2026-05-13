@@ -4,6 +4,11 @@ page {
   font-size: 28rpx;
 }
 
+button {
+  min-width: 0;
+  box-sizing: border-box;
+}
+
 .page-shell {
   padding: 24rpx;
 }

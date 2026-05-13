@@ -41,6 +41,19 @@ function getRoleText(role) {
 function buildCachedProfile(profile = {}) {
   const accountLoggedIn = Boolean(wx.getStorageSync("accountLoggedIn"))
   const accountLoggedOut = Boolean(wx.getStorageSync("accountLoggedOut"))
+  if (accountLoggedOut) {
+    return {
+      registered: false,
+      nickname: "游客123456",
+      avatarUrl: "",
+      role: "viewer",
+      roleText: "普通用户",
+      phone: "",
+      phoneText: "未授权",
+      hasPassword: false,
+    }
+  }
+
   const nickname = cleanRegisterNickname(profile.nickname)
   const phone = String(profile.phone || "").trim()
   const role = profile.role || getApp().globalData.userRole || "viewer"
@@ -110,10 +123,6 @@ Page({
     try {
       const result = await listMyAccess({ action: "summary" })
       const sections = result.sections || {}
-      if (result.profile && result.profile.registered) {
-        wx.removeStorageSync("accountLoggedOut")
-        wx.setStorageSync("accountLoggedIn", true)
-      }
       const profile = buildCachedProfile(result.profile || this.data.profile)
       this.cacheProfile(profile)
       this.setData({
@@ -142,6 +151,14 @@ Page({
     }
   },
   applyCachedProfile() {
+    if (wx.getStorageSync("accountLoggedOut")) {
+      this.setData({
+        profile: buildCachedProfile({}),
+        profileReady: true,
+      })
+      return
+    }
+
     const app = getApp()
     const globalProfile = app.globalData.currentUserProfile || {}
     let cachedProfile = {}
@@ -177,11 +194,15 @@ Page({
     }
     const normalizedProfile = buildCachedProfile(profile)
 
-    app.globalData.userRole = normalizedProfile.role || app.globalData.userRole
+    app.globalData.userRole = normalizedProfile.role || "viewer"
     app.globalData.currentUserProfile = normalizedProfile
 
     try {
-      wx.setStorageSync("currentUserProfile", normalizedProfile)
+      if (normalizedProfile.registered) {
+        wx.setStorageSync("currentUserProfile", normalizedProfile)
+      } else {
+        wx.removeStorageSync("currentUserProfile")
+      }
     } catch (error) {
       console.error("缓存用户资料失败", error)
     }

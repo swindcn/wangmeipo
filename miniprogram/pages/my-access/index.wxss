@@ -7,6 +7,8 @@ button {
   padding: 0;
   min-width: 0;
   border: none;
+  box-sizing: border-box;
+  line-height: normal;
 }
 
 button::after {
@@ -106,14 +108,21 @@ button::after {
 }
 
 .quick-auth-button {
-  width: 112rpx;
+  width: 104rpx;
+  min-width: 104rpx;
+  max-width: 104rpx;
   height: 48rpx;
+  flex: 0 0 104rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 8rpx;
   background: rgba(255, 255, 255, 0.92);
   color: #de8190;
   font-size: 22rpx;
   font-weight: 800;
-  line-height: 48rpx;
+  line-height: 1;
+  text-align: center;
 }
 
 .settings-entry {

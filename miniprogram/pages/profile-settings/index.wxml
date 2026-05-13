@@ -27,7 +27,6 @@
     </view>
   </view>
 
-  <button class="save-button" loading="{{saving}}" disabled="{{saving}}" bindtap="handleSave">保存资料</button>
   <button class="logout-button" bindtap="handleLogout">退出登录</button>
 
   <view wx:if="{{nicknameModalVisible}}" class="modal-mask">

@@ -117,7 +117,8 @@ async function upsertUserByPhone({ openid, phone, profile = {}, patch = {} }) {
 }
 
 async function quickLogin(event, openid) {
-  const phone = await resolvePhoneNumber(event.phoneCode)
+  const existingUser = await findUserByOpenid(openid)
+  const phone = await resolvePhoneNumber(event.phoneCode) || compactString(existingUser && existingUser.phone)
   if (!phone) {
     return { ok: false, error: "phone auth failed" }
   }

@@ -163,12 +163,6 @@ Page({
     await this.saveProfilePatch({ avatarUrl: this.data.draftAvatarUrl }, "已保存")
     this.setData({ avatarModalVisible: false })
   },
-  handleSave() {
-    this.saveProfilePatch({
-      nickname: this.data.profile.nickname,
-      avatarUrl: this.data.profile.avatarUrl,
-    })
-  },
   handleLogout() {
     const app = getApp()
     app.globalData.userRole = "viewer"
@@ -187,6 +181,8 @@ Page({
     wx.removeStorageSync("accountLoggedIn")
     wx.setStorageSync("accountLoggedOut", true)
     wx.showToast({ title: "已退出", icon: "success" })
-    setTimeout(() => wx.navigateBack(), 400)
+    setTimeout(() => {
+      wx.redirectTo({ url: "/pages/my-access/index" })
+    }, 400)
   },
 })

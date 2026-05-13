@@ -78,7 +78,6 @@ button::after {
   flex-shrink: 0;
 }
 
-.save-button,
 .logout-button {
   height: 60rpx;
   margin: 360rpx 38rpx 0;
@@ -90,14 +89,8 @@ button::after {
   line-height: 60rpx;
 }
 
-.save-button {
-  margin-top: 300rpx;
-  border-color: #de8190;
-  color: #de8190;
-}
-
 .logout-button {
-  margin-top: 22rpx;
+  margin-top: 420rpx;
 }
 
 .modal-mask {
