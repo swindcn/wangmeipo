@@ -25,6 +25,8 @@ Page({
     privateSharePath: "",
     pendingShareMode: "",
     activeShareToken: "",
+    shareCardImageUrl: "",
+    shareCardReady: false,
     posterGenerating: false,
     currentPhotoIndex: 0,
     suppressNextShowRefresh: false,
@@ -126,7 +128,12 @@ Page({
       this.setData({
         candidate: candidate || null,
         currentPhotoIndex: 0,
+        shareCardImageUrl: "",
+        shareCardReady: false,
       })
+      if (candidate) {
+        this.prepareShareCardImage(candidate)
+      }
       if (candidate && source !== "trash") {
         this.preparePrivateSharePath(candidate._id)
       }
@@ -704,6 +711,92 @@ Page({
       })
     })
   },
+  async drawShareCardToTempFile(candidate) {
+    const query = wx.createSelectorQuery()
+    const canvasInfo = await new Promise((resolve, reject) => {
+      query.select("#posterCanvas")
+        .fields({ node: true, size: true })
+        .exec((result) => {
+          if (!result || !result[0] || !result[0].node) {
+            reject(new Error("share card canvas not found"))
+            return
+          }
+          resolve(result[0])
+        })
+    })
+    const canvas = canvasInfo.node
+    const ctx = canvas.getContext("2d")
+    const width = 500
+    const height = 400
+    const dpr = wx.getWindowInfo ? wx.getWindowInfo().pixelRatio || 2 : wx.getSystemInfoSync().pixelRatio || 2
+    canvas.width = width * dpr
+    canvas.height = height * dpr
+    ctx.scale(dpr, dpr)
+
+    const photoInfo = await this.getPosterImagePath(candidate)
+    ctx.fillStyle = "#f6f0e7"
+    ctx.fillRect(0, 0, width, height)
+
+    const gradient = ctx.createLinearGradient(0, 0, width, height)
+    gradient.addColorStop(0, "#f3d7dc")
+    gradient.addColorStop(1, "#ead6c6")
+    ctx.fillStyle = gradient
+    ctx.fillRect(0, 0, width, height)
+
+    const photoSize = 292
+    const photoX = Math.round((width - photoSize) / 2)
+    const photoY = 42
+    ctx.save()
+    this.drawRoundRect(ctx, photoX, photoY, photoSize, photoSize, 28)
+    ctx.clip()
+    if (photoInfo && photoInfo.path) {
+      const image = canvas.createImage()
+      await new Promise((resolve, reject) => {
+        image.onload = resolve
+        image.onerror = reject
+        image.src = photoInfo.path
+      })
+      this.drawCoverImage(ctx, image, photoInfo, photoX, photoY, photoSize, photoSize)
+    } else {
+      this.drawPosterPlaceholder(ctx, photoX, photoY, photoSize, photoSize, false)
+    }
+    ctx.restore()
+
+    ctx.fillStyle = "#2f241f"
+    ctx.font = "900 30px sans-serif"
+    ctx.textAlign = "center"
+    ctx.fillText("优质会员资料", width / 2, 366)
+
+    return new Promise((resolve, reject) => {
+      wx.canvasToTempFilePath({
+        canvas,
+        width,
+        height,
+        destWidth: width * 2,
+        destHeight: height * 2,
+        fileType: "jpg",
+        quality: 0.9,
+        success: (result) => resolve(result.tempFilePath),
+        fail: reject,
+      })
+    })
+  },
+  async prepareShareCardImage(candidate) {
+    try {
+      const imageUrl = await this.drawShareCardToTempFile(candidate)
+      if (this.data.candidate && candidate && this.data.candidate._id === candidate._id) {
+        this.setData({
+          shareCardImageUrl: imageUrl || "",
+          shareCardReady: true,
+        })
+      }
+    } catch (error) {
+      console.error("分享卡片封面生成失败", error)
+      if (this.data.candidate && candidate && this.data.candidate._id === candidate._id) {
+        this.setData({ shareCardReady: true })
+      }
+    }
+  },
   async handleSharePoster() {
     const candidate = this.data.candidate
     if (!candidate || this.data.posterGenerating) {
@@ -888,8 +981,9 @@ Page({
     const modeText = mode === "public" ? "公开分享" : (mode === "private" ? "私密分享" : this.data.shareModeText)
 
     return {
-      title: `${modeText || "会员"}资料`,
+      title: "优质会员资料",
       path: sharePath || `/pages/candidate-detail/index?id=${candidate._id || ""}`,
+      imageUrl: this.data.shareCardImageUrl || (candidate.photoUrls && candidate.photoUrls[0]) || "",
     }
   },
 })

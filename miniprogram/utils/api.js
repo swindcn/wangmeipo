@@ -1,3 +1,40 @@
+const CLOUD_ENV_ID = "cloud1-d2g8yliwa5b20fae7"
+
+function normalizeCloudFileUrl(url) {
+  const text = String(url || "").trim()
+  if (!text || text.startsWith("cloud://")) return text
+
+  const match = text.match(/^https:\/\/([^/]+)\.tcb\.qcloud\.la\/([^?]+)/)
+  if (!match || !match[1] || !match[2]) return text
+
+  try {
+    const path = decodeURIComponent(match[2]).replace(/^\/+/, "")
+    return path ? `cloud://${CLOUD_ENV_ID}.${match[1]}/${path}` : text
+  } catch (error) {
+    return text
+  }
+}
+
+function normalizeCloudFileList(list) {
+  return Array.isArray(list) ? list.map(normalizeCloudFileUrl).filter(Boolean) : []
+}
+
+function normalizeMediaObject(item) {
+  if (!item || typeof item !== "object") return item
+  const next = { ...item }
+
+  if (next.avatarUrl) next.avatarUrl = normalizeCloudFileUrl(next.avatarUrl)
+  if (next.photoUrl) next.photoUrl = normalizeCloudFileUrl(next.photoUrl)
+  if (next.imageUrl) next.imageUrl = normalizeCloudFileUrl(next.imageUrl)
+  if (Array.isArray(next.photoUrls)) next.photoUrls = normalizeCloudFileList(next.photoUrls)
+
+  return next
+}
+
+function normalizeMediaList(list) {
+  return Array.isArray(list) ? list.map(normalizeMediaObject) : []
+}
+
 function getDebugViewerUserId() {
   const app = getApp()
   return app && app.globalData ? app.globalData.currentViewerId || "" : ""
@@ -82,7 +119,7 @@ async function listCandidates(params) {
     limit: params && params.limit ? params.limit : 12,
     includePhotos: !(params && params.includePhotos === false),
   })
-  return unwrapResult(response).items || []
+  return normalizeMediaList(unwrapResult(response).items || [])
 }
 
 async function listHomeCandidates() {
@@ -113,22 +150,22 @@ async function getCandidateDetail(candidateId, options) {
     shareToken: options && options.shareToken ? options.shareToken : "",
     source: options && options.source ? options.source : "",
   })
-  return unwrapResult(response).item || null
+  return normalizeMediaObject(unwrapResult(response).item || null)
 }
 
 async function listReviewQueue(params) {
   const response = await callCloudFunction("listReviewQueue", params || {})
-  return unwrapResult(response).items || []
+  return normalizeMediaList(unwrapResult(response).items || [])
 }
 
 async function listCandidateSubscriptions(params) {
   const response = await callCloudFunction("listCandidateSubscriptions", params || {})
-  return unwrapResult(response).items || []
+  return normalizeMediaList(unwrapResult(response).items || [])
 }
 
 async function listDeletedCandidates(params) {
   const response = await callCloudFunction("listDeletedCandidates", params || {})
-  return unwrapResult(response).items || []
+  return normalizeMediaList(unwrapResult(response).items || [])
 }
 
 async function reviewCandidate(candidateId, payload) {
@@ -161,7 +198,20 @@ async function saveMatchRecord(payload) {
 
 async function listMyAccess(params) {
   const response = await callCloudFunction("listMyAccess", params || {})
-  return unwrapResult(response)
+  const result = unwrapResult(response)
+  if (result && result.profile) result.profile = normalizeMediaObject(result.profile)
+  if (result && Array.isArray(result.sections)) {
+    result.sections = result.sections.map((section) => ({
+      ...section,
+      items: normalizeMediaList(section.items || []),
+    }))
+  } else if (result && result.sections && typeof result.sections === "object") {
+    result.sections = Object.keys(result.sections).reduce((sections, key) => {
+      sections[key] = normalizeMediaList(result.sections[key] || [])
+      return sections
+    }, {})
+  }
+  return result
 }
 
 async function createShareToken(payload) {
@@ -191,17 +241,25 @@ async function setCandidateSubscription(payload) {
 
 async function manageAdminSettings(payload) {
   const response = await callCloudFunction("manageAdminSettings", payload)
-  return unwrapResult(response)
+  const result = unwrapResult(response)
+  if (result && result.items) result.items = normalizeMediaList(result.items)
+  if (result && result.superAdmins) result.superAdmins = normalizeMediaList(result.superAdmins)
+  if (result && result.managers) result.managers = normalizeMediaList(result.managers)
+  return result
 }
 
 async function manageViewRequests(payload) {
   const response = await callCloudFunction("manageViewRequests", payload)
-  return unwrapResult(response)
+  const result = unwrapResult(response)
+  if (result && result.items) result.items = normalizeMediaList(result.items)
+  return result
 }
 
 async function manageAccount(payload) {
   const response = await callCloudFunction("manageAccount", payload)
-  return unwrapResult(response)
+  const result = unwrapResult(response)
+  if (result && result.user) result.user = normalizeMediaObject(result.user)
+  return result
 }
 
 module.exports = {
@@ -223,6 +281,7 @@ module.exports = {
   manageViewRequests,
   manageAdminSettings,
   manageAccount,
+  normalizeCloudFileUrl,
   reviewCandidate,
   saveMatchRecord,
   saveAskMatchmakerChat,

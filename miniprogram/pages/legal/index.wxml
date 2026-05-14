@@ -1,0 +1,16 @@
+<view class="legal-page">
+  <view class="legal-card">
+    <view class="legal-title">{{title}}</view>
+    <view class="legal-meta">更新日期：{{updatedAt}}</view>
+    <view class="legal-meta">应用名称：王媒婆</view>
+  </view>
+
+  <view class="legal-card">
+    <block wx:for="{{sections}}" wx:key="title">
+      <view class="section">
+        <view class="section-heading">{{item.title}}</view>
+        <view class="section-body">{{item.body}}</view>
+      </view>
+    </block>
+  </view>
+</view>

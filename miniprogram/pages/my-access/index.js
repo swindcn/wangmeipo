@@ -144,8 +144,16 @@ Page({
         ],
       })
     } catch (error) {
-      wx.showToast({ title: "加载失败", icon: "none" })
       console.error(error)
+      const profile = buildCachedProfile(this.data.profile)
+      this.setData({
+        profile,
+        sections: [
+          buildEmptySection("submitted", "传的资料", "", "pink"),
+          buildEmptySection("wanted", "我想看的", "", "orange"),
+          buildEmptySection("viewed", "对看过的", "", "purple"),
+        ],
+      })
     } finally {
       this.setData({ loading: false, profileReady: true })
     }

@@ -67,9 +67,11 @@ button::after {
   font-weight: 800;
 }
 
-.wechat-icon {
-  color: #ffffff;
-  font-size: 24rpx;
+.quick-login-icon {
+  width: 34rpx;
+  height: 34rpx;
+  display: block;
+  flex: 0 0 34rpx;
 }
 
 .phone-login-button {

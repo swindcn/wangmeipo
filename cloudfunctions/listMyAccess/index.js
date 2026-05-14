@@ -68,18 +68,6 @@ async function resolveCurrentUser(event = {}) {
   return usersResult.data[0] || null
 }
 
-async function buildPhotoUrl(photoAssetIds) {
-  if (!Array.isArray(photoAssetIds) || photoAssetIds.length === 0) {
-    return ""
-  }
-
-  const result = await cloud.getTempFileURL({
-    fileList: [photoAssetIds[0]],
-  })
-  const firstFile = result.fileList && result.fileList[0]
-  return firstFile && firstFile.tempFileURL ? firstFile.tempFileURL : ""
-}
-
 function getStatusText(status) {
   if (status === "published" || status === "approved") return "已同意"
   if (status === "rejected") return "已拒绝"
@@ -124,15 +112,35 @@ function mapCandidateItem(candidate, options = {}) {
 }
 
 async function attachPhotos(items, candidateMap = {}) {
-  return Promise.all(items.map(async (item) => {
+  const photoIds = items
+    .map((item) => {
+      const candidate = candidateMap[item.candidateId] || item.__candidate || {}
+      return Array.isArray(candidate.photoAssetIds) && candidate.photoAssetIds[0] ? candidate.photoAssetIds[0] : ""
+    })
+    .filter(Boolean)
+  const uniquePhotoIds = Array.from(new Set(photoIds))
+  const photoUrlMap = {}
+
+  if (uniquePhotoIds.length > 0) {
+    const result = await cloud.getTempFileURL({
+      fileList: uniquePhotoIds,
+    })
+    ;(result.fileList || []).forEach((file) => {
+      if (file.fileID && file.tempFileURL) {
+        photoUrlMap[file.fileID] = file.tempFileURL
+      }
+    })
+  }
+
+  return items.map((item) => {
     const candidate = candidateMap[item.candidateId] || item.__candidate || {}
-    const photoUrl = await buildPhotoUrl(candidate.photoAssetIds || [])
+    const photoId = Array.isArray(candidate.photoAssetIds) && candidate.photoAssetIds[0] ? candidate.photoAssetIds[0] : ""
     const { __candidate, ...safeItem } = item
     return {
       ...safeItem,
-      photoUrl,
+      photoUrl: photoUrlMap[photoId] || "",
     }
-  }))
+  })
 }
 
 async function getSubmittedItems(currentUser) {

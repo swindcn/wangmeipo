@@ -300,6 +300,16 @@ button::after {
   padding: 0 22rpx 30rpx;
 }
 
+.review-request-actions {
+  flex-direction: row;
+  gap: 18rpx;
+}
+
+.review-request-actions .action-button {
+  flex: 1;
+  min-width: 0;
+}
+
 .action-button {
   height: 86rpx;
   border-radius: 24rpx;
@@ -364,6 +374,17 @@ button::after {
   font-size: 34rpx;
   font-weight: 900;
   line-height: 1;
+}
+
+.bar-icon-image {
+  width: 36rpx;
+  height: 36rpx;
+  display: block;
+  flex: 0 0 36rpx;
+}
+
+.bar-action[disabled] .bar-icon-image {
+  opacity: 0.42;
 }
 
 .bar-label {

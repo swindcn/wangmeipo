@@ -42,7 +42,9 @@ Page({
     }
 
     this.setData({ loading: true })
+    let loadingShown = false
     wx.showLoading({ title: "登录中" })
+    loadingShown = true
     try {
       const result = await manageAccount({
         action: "quickLogin",
@@ -58,12 +60,16 @@ Page({
       wx.showToast({ title: "登录失败", icon: "none" })
       console.error(error)
     } finally {
-      wx.hideLoading()
+      if (loadingShown) wx.hideLoading()
       this.setData({ loading: false })
     }
   },
   handlePhoneLogin() {
     if (!this.ensureAgreed()) return
     wx.navigateTo({ url: "/pages/phone-login/index" })
+  },
+  handleOpenAgreement(event) {
+    const { type } = event.currentTarget.dataset
+    wx.navigateTo({ url: `/pages/legal/index?type=${type || "terms"}` })
   },
 })

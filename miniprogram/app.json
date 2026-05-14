@@ -18,6 +18,7 @@
     "pages/match-records/index",
     "pages/login/index",
     "pages/phone-login/index",
+    "pages/legal/index",
     "pages/profile-settings/index",
     "pages/password-settings/index",
     "pages/my-list/index",

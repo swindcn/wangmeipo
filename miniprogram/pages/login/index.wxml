@@ -7,18 +7,18 @@
 
   <view class="login-actions">
     <button class="quick-login-button" open-type="getPhoneNumber" bindgetphonenumber="handleQuickLogin" loading="{{loading}}" disabled="{{loading}}">
-      <text class="wechat-icon">●</text>
+      <image class="quick-login-icon" src="../../assets/icons/login-phone-quick.png" mode="aspectFit" />
       <text>手机号快捷登录</text>
     </button>
     <button class="phone-login-button" bindtap="handlePhoneLogin">手机号登录</button>
   </view>
 
-  <view class="agreement-row" bindtap="toggleAgree">
-    <view class="radio {{agreed ? 'checked' : ''}}"></view>
+  <view class="agreement-row">
+    <view class="radio {{agreed ? 'checked' : ''}}" bindtap="toggleAgree"></view>
     <text>我已认真阅读并同意</text>
-    <text class="link">《用户协议》</text>
+    <text class="link" data-type="terms" bindtap="handleOpenAgreement">《用户协议》</text>
     <text>及</text>
-    <text class="link">《隐私协议》</text>
+    <text class="link" data-type="privacy" bindtap="handleOpenAgreement">《隐私协议》</text>
   </view>
 
   <view class="login-tip">未注册的手机号登录后将自动创建账号</view>

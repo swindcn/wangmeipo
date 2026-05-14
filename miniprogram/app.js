@@ -1,3 +1,20 @@
+const CLOUD_ENV_ID = "cloud1-d2g8yliwa5b20fae7"
+
+function normalizeCloudFileUrl(url) {
+  const text = String(url || "").trim()
+  if (!text || text.startsWith("cloud://")) return text
+
+  const match = text.match(/^https:\/\/([^/]+)\.tcb\.qcloud\.la\/([^?]+)/)
+  if (!match || !match[1] || !match[2]) return text
+
+  try {
+    const path = decodeURIComponent(match[2]).replace(/^\/+/, "")
+    return path ? `cloud://${CLOUD_ENV_ID}.${match[1]}/${path}` : text
+  } catch (error) {
+    return text
+  }
+}
+
 App({
   globalData: {
     envId: "cloud1-d2g8yliwa5b20fae7",
@@ -54,7 +71,7 @@ App({
       this.globalData.currentUserProfile = {
         registered: Boolean(accountLoggedIn && currentViewer._id && phone),
         nickname: currentViewer.nickname || "",
-        avatarUrl: currentViewer.avatarUrl || "",
+        avatarUrl: normalizeCloudFileUrl(currentViewer.avatarUrl || ""),
         phone,
         phoneText,
         role,

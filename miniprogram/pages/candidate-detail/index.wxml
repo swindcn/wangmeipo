@@ -112,7 +112,7 @@
       <button class="action-button" bindtap="handleApprove">发布该资料</button>
     </view>
 
-    <view class="action-list" wx:if="{{requestId && candidate.canUseKeyActions}}">
+    <view class="action-list review-request-actions" wx:if="{{requestId && candidate.canUseKeyActions}}">
       <button class="action-button" data-action="approve" bindtap="handleReviewViewRequest">同意想看</button>
       <button class="action-button reject-button" data-action="reject" bindtap="handleReviewViewRequest">拒绝想看</button>
     </view>
@@ -128,26 +128,26 @@
     </view>
   </view>
 
-  <view wx:if="{{candidate && !candidate.isTrashMode && candidate.canUseKeyActions}}" class="fixed-action-bar">
-    <button class="bar-action" open-type="share" data-mode="public" disabled="{{!publicSharePath}}" bindtap="handlePublicShareTap">
-      <text class="bar-icon">↗</text>
-      <text class="bar-label">公开分享</text>
+  <view wx:if="{{candidate && !requestId && !candidate.isTrashMode && candidate.canUseKeyActions}}" class="fixed-action-bar">
+    <button class="bar-action" open-type="share" data-mode="public" disabled="{{!publicSharePath || !shareCardReady}}" bindtap="handlePublicShareTap">
+      <image class="bar-icon-image" src="../../assets/icons/detail-action-share-public.png" mode="aspectFit" />
+      <text class="bar-label">{{shareCardReady ? '公开分享' : '生成中'}}</text>
     </button>
-    <button class="bar-action" open-type="share" data-mode="private" disabled="{{!privateSharePath}}" bindtap="handlePrivateShareTap">
-      <text class="bar-icon">▣</text>
-      <text class="bar-label">私密分享</text>
+    <button class="bar-action" open-type="share" data-mode="private" disabled="{{!privateSharePath || !shareCardReady}}" bindtap="handlePrivateShareTap">
+      <image class="bar-icon-image" src="../../assets/icons/detail-action-share-private.png" mode="aspectFit" />
+      <text class="bar-label">{{shareCardReady ? '私密分享' : '生成中'}}</text>
     </button>
     <button class="bar-action" loading="{{posterGenerating}}" disabled="{{posterGenerating}}" bindtap="handleSharePoster">
-      <text class="bar-icon">▧</text>
+      <image class="bar-icon-image" src="../../assets/icons/detail-action-poster.png" mode="aspectFit" />
       <text class="bar-label">海报分享</text>
     </button>
     <button class="bar-action" bindtap="handleGoMatch">
-      <text class="bar-icon">∞</text>
+      <image class="bar-icon-image" src="../../assets/icons/detail-action-match.png" mode="aspectFit" />
       <text class="bar-label">添加匹配</text>
     </button>
   </view>
 
-  <view wx:if="{{candidate && !candidate.isTrashMode && !candidate.canUseKeyActions && !candidate.hasKeyDataAccess}}" class="fixed-action-bar viewer-bar">
+  <view wx:if="{{candidate && !requestId && !candidate.isTrashMode && !candidate.canUseKeyActions && !candidate.hasKeyDataAccess}}" class="fixed-action-bar viewer-bar">
     <button class="viewer-want-button {{candidate.viewRequestPending ? 'pending' : ''}}" disabled="{{candidate.viewRequestPending}}" bindtap="handleViewRequest">
       <text class="bar-icon">♥</text>
       <text>{{candidate.viewRequestButtonText}}</text>
