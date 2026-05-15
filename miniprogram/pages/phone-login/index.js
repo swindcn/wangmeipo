@@ -25,6 +25,20 @@ Page({
     password: "",
     agreed: false,
     loading: false,
+    redirect: "",
+  },
+  onLoad(query = {}) {
+    this.setData({
+      redirect: query.redirect || "",
+    })
+  },
+  finishLogin() {
+    if (this.data.redirect === "upload") {
+      wx.redirectTo({ url: "/pages/upload-profile/index" })
+      return
+    }
+
+    wx.navigateBack({ delta: 2 })
   },
   handlePhoneInput(event) {
     this.setData({ phone: String(event.detail.value || "").trim() })
@@ -59,7 +73,7 @@ Page({
       applyLoginUser(result.user)
       wx.showToast({ title: "已登录", icon: "success" })
       setTimeout(() => {
-        wx.navigateBack({ delta: 2 })
+        this.finishLogin()
       }, 400)
     } catch (error) {
       wx.showToast({ title: "手机号或密码错误", icon: "none" })

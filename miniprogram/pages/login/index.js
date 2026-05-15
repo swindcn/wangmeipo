@@ -25,6 +25,20 @@ Page({
   data: {
     agreed: false,
     loading: false,
+    redirect: "",
+  },
+  onLoad(query = {}) {
+    this.setData({
+      redirect: query.redirect || "",
+    })
+  },
+  finishLogin() {
+    if (this.data.redirect === "upload") {
+      wx.redirectTo({ url: "/pages/upload-profile/index" })
+      return
+    }
+
+    wx.navigateBack()
   },
   toggleAgree() {
     this.setData({ agreed: !this.data.agreed })
@@ -55,7 +69,7 @@ Page({
       }
       applyLoginUser(result.user)
       wx.showToast({ title: "已登录", icon: "success" })
-      setTimeout(() => wx.navigateBack(), 400)
+      setTimeout(() => this.finishLogin(), 400)
     } catch (error) {
       wx.showToast({ title: "登录失败", icon: "none" })
       console.error(error)
@@ -66,7 +80,8 @@ Page({
   },
   handlePhoneLogin() {
     if (!this.ensureAgreed()) return
-    wx.navigateTo({ url: "/pages/phone-login/index" })
+    const redirectQuery = this.data.redirect ? `?redirect=${this.data.redirect}` : ""
+    wx.navigateTo({ url: `/pages/phone-login/index${redirectQuery}` })
   },
   handleOpenAgreement(event) {
     const { type } = event.currentTarget.dataset
