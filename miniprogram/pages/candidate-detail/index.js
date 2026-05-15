@@ -14,6 +14,16 @@ function cleanRegisterNickname(nickname) {
   return SYSTEM_NICKNAMES.includes(text) ? "" : text
 }
 
+function getCandidatePhotoSources(candidate = {}) {
+  const urls = Array.isArray(candidate.photoUrls) ? candidate.photoUrls.filter(Boolean) : []
+  const assetIds = Array.isArray(candidate.photoAssetIds) ? candidate.photoAssetIds.filter(Boolean) : []
+  return urls.length > 0 ? urls : assetIds
+}
+
+function getCandidateReadablePhotoSources(candidate = {}) {
+  return Array.isArray(candidate.photoUrls) ? candidate.photoUrls.filter(Boolean) : []
+}
+
 Page({
   data: {
     candidate: null,
@@ -111,8 +121,9 @@ Page({
         candidate.isTrashMode = source === "trash" || candidate.fromTrash
         candidate.isSubscribed = this.isSubscriptionActive(candidate.subscriptionExpiresAt)
         candidate.subscriptionExpiresText = this.formatDisplayDate(candidate.subscriptionExpiresAt)
-        if (candidate.photoUrls && candidate.photoUrls.length > 0) {
-          candidate.displayPhotos = candidate.photoUrls.map((item) => ({
+        const displayPhotoSources = getCandidatePhotoSources(candidate)
+        if (displayPhotoSources.length > 0) {
+          candidate.displayPhotos = displayPhotoSources.map((item) => ({
             type: "url",
             value: item,
           }))
@@ -441,7 +452,7 @@ Page({
   },
   handlePreviewPhoto() {
     const candidate = this.data.candidate || {}
-    const photos = Array.isArray(candidate.photoUrls) ? candidate.photoUrls : []
+    const photos = getCandidateReadablePhotoSources(candidate)
     if (!candidate.canViewPhotos || photos.length === 0) {
       return
     }
@@ -504,7 +515,7 @@ Page({
     ctx.closePath()
   },
   async getPosterImagePath(candidate) {
-    const photos = Array.isArray(candidate.photoUrls) ? candidate.photoUrls : []
+    const photos = getCandidateReadablePhotoSources(candidate)
     if (!candidate.canViewPhotos || !photos.length) {
       return ""
     }
@@ -983,7 +994,7 @@ Page({
     return {
       title: "优质会员资料",
       path: sharePath || `/pages/candidate-detail/index?id=${candidate._id || ""}`,
-      imageUrl: this.data.shareCardImageUrl || (candidate.photoUrls && candidate.photoUrls[0]) || "",
+      imageUrl: this.data.shareCardImageUrl || getCandidateReadablePhotoSources(candidate)[0] || "",
     }
   },
 })

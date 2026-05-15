@@ -186,6 +186,11 @@ button::after {
   line-height: 32rpx;
 }
 
+.field-label.required::after {
+  content: " *";
+  color: #de8190;
+}
+
 .line-input,
 .picker-value {
   width: 100%;

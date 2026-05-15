@@ -25,7 +25,7 @@ button::after {
 }
 
 .home-header {
-  height: 58rpx;
+  height: 92rpx;
   padding: 0 28rpx;
   display: flex;
   align-items: center;
@@ -35,27 +35,30 @@ button::after {
 }
 
 .brand-mark {
+  width: 100%;
   display: flex;
   align-items: center;
-  gap: 10rpx;
+  justify-content: space-between;
+  gap: 20rpx;
 }
 
 .brand-logo {
-  width: 40rpx;
-  height: 40rpx;
+  width: 80rpx;
+  height: 80rpx;
   display: block;
 }
 
 .brand-wordmark {
-  width: 100rpx;
-  height: 24rpx;
+  width: 200rpx;
+  height: 48rpx;
   display: block;
+  margin-left: auto;
 }
 
 .search-row {
   display: flex;
   gap: 12rpx;
-  padding: 16rpx 24rpx 20rpx;
+  padding: 16rpx 24rpx 12rpx;
   background: #ffffff;
 }
 
@@ -83,6 +86,52 @@ button::after {
   text-align: center;
 }
 
+.quick-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 0 24rpx 18rpx;
+  background: #ffffff;
+  overflow-x: auto;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.quick-filter-chip {
+  flex: 0 0 auto;
+  height: 48rpx;
+  padding: 0 24rpx;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6rpx;
+  background: #e5e5e5;
+  color: #151515;
+  font-size: 25rpx;
+  font-weight: 700;
+  line-height: 48rpx;
+}
+
+.quick-filter-chip.active {
+  background: #e98996;
+  color: #ffffff;
+}
+
+.quick-filter-clear {
+  flex: 0 0 auto;
+  width: 48rpx;
+  height: 48rpx;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999rpx;
+  background: #9f9f9f;
+  color: #ffffff;
+  font-size: 42rpx;
+  font-weight: 900;
+  line-height: 44rpx;
+}
+
 .home-loading {
   padding: 80rpx 0 20rpx;
   color: #999999;
@@ -90,10 +139,17 @@ button::after {
   text-align: center;
 }
 
+.load-more-text {
+  padding: 8rpx 0 36rpx;
+  color: #aaaaaa;
+  font-size: 24rpx;
+  text-align: center;
+}
+
 .waterfall {
   display: flex;
   gap: 18rpx;
-  padding: 74rpx 24rpx 24rpx;
+  padding: 37rpx 24rpx 24rpx;
   box-sizing: border-box;
 }
 
@@ -159,7 +215,18 @@ button::after {
   background: linear-gradient(180deg, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.62));
 }
 
+.profile-basic {
+  flex: 0 0 auto;
+  height: 38rpx;
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+}
+
 .gender {
+  height: 38rpx;
+  display: inline-flex;
+  align-items: center;
   font-size: 34rpx;
   font-weight: 700;
   line-height: 38rpx;
@@ -173,12 +240,28 @@ button::after {
   color: #3b89ff;
 }
 
-.profile-age {
-  min-width: 42rpx;
+.unknown {
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 22rpx;
+}
+
+.profile-age,
+.profile-zodiac {
+  height: 38rpx;
+  display: inline-flex;
+  align-items: center;
   color: #ffffff;
   font-size: 28rpx;
   font-weight: 800;
   line-height: 38rpx;
+}
+
+.profile-age {
+  min-width: 42rpx;
+}
+
+.profile-zodiac {
+  min-width: 28rpx;
 }
 
 .tag-lines {

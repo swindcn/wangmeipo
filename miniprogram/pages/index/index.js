@@ -1,7 +1,6 @@
 const {
   bootstrapCloudDatabase,
   listHomeCandidates,
-  searchHomeCandidates,
   upsertCurrentUser,
 } = require("../../utils/api")
 
@@ -99,7 +98,15 @@ const tabItems = [
 let homeProfilesCache = null
 let homeProfilesCacheAt = 0
 const HOME_CACHE_TTL = 2 * 60 * 1000
+const HOME_PAGE_SIZE = 12
 const SYSTEM_NICKNAMES = ["云开发管理员"]
+const QUICK_FILTERS = [
+  { key: "male", label: "男生" },
+  { key: "female", label: "女生" },
+  { key: "fuzhou", label: "福州" },
+  { key: "changle", label: "长乐" },
+  { key: "stableJob", label: "工作稳定" },
+]
 
 function cleanRegisterNickname(nickname) {
   const text = String(nickname || "").trim()
@@ -122,8 +129,22 @@ function formatHitReasonTag(reason) {
   return `${fieldName} ${matchedText}`
 }
 
+function buildQuickFilterItems(activeKeys = []) {
+  const activeMap = activeKeys.reduce((result, key) => {
+    result[key] = true
+    return result
+  }, {})
+
+  return QUICK_FILTERS.map((item) => ({
+    ...item,
+    active: Boolean(activeMap[item.key]),
+    className: `quick-filter-chip${activeMap[item.key] ? " active" : ""}`,
+  }))
+}
+
 function normalizeProfile(candidate, index) {
   const tags = []
+  const gender = candidate.gender === "男" || candidate.gender === "女" ? candidate.gender : "未知"
   if (candidate.ancestralHome) tags.push(candidate.ancestralHome)
   if (candidate.occupation) tags.push(candidate.occupation)
   if (candidate.education && tags.length < 2) tags.push(candidate.education)
@@ -135,13 +156,16 @@ function normalizeProfile(candidate, index) {
     _id: candidate._id || `candidate-${index}`,
     name: candidate.name || "未命名",
     age: candidate.age || "-",
-    gender: candidate.gender || "女",
-    genderIcon: candidate.gender === "男" ? "♂" : "♀",
-    genderClass: candidate.gender === "男" ? "male" : "female",
+    zodiac: candidate.zodiac || "",
+    gender,
+    genderIcon: gender === "男" ? "♂" : (gender === "女" ? "♀" : "未知"),
+    genderClass: gender === "男" ? "male" : (gender === "女" ? "female" : "unknown"),
     tags: tags.length > 0 ? tags.slice(0, 2) : ["待完善"],
     canViewPhotos: Boolean(candidate.canViewPhotos),
     isPrivateLocked: !candidate.canViewPhotos,
-    imageUrl: candidate.photoUrls && candidate.photoUrls[0] ? candidate.photoUrls[0] : fallbackProfiles[index % fallbackProfiles.length].imageUrl,
+    imageUrl: candidate.thumbnailUrls && candidate.thumbnailUrls[0]
+      ? candidate.thumbnailUrls[0]
+      : (candidate.photoUrls && candidate.photoUrls[0] ? candidate.photoUrls[0] : fallbackProfiles[index % fallbackProfiles.length].imageUrl),
   }
 }
 
@@ -156,6 +180,12 @@ Page({
     initTapCount: 0,
     hasLoadedProfiles: false,
     loadingProfiles: false,
+    loadingMore: false,
+    hasMoreProfiles: true,
+    pageOffset: 0,
+    searchMode: false,
+    activeQuickFilters: [],
+    quickFilterItems: buildQuickFilterItems(),
     refresherTriggered: false,
     headerTopGap: 88,
     profileScrollHeight: 520,
@@ -228,8 +258,8 @@ Page({
       topGapPx = menuButton.bottom + bottomGapPx
     }
 
-    const headerHeightPx = rpxToPx(58)
-    const searchHeightPx = rpxToPx(102)
+    const headerHeightPx = rpxToPx(92)
+    const searchHeightPx = rpxToPx(162)
     const bottomTabsHeightPx = rpxToPx(118)
     const profileScrollHeight = Math.max(
       320,
@@ -258,7 +288,10 @@ Page({
   },
   async loadProfiles(options = {}) {
     const now = Date.now()
-    const useCache = !options.force && homeProfilesCache && now - homeProfilesCacheAt < HOME_CACHE_TTL
+    const keyword = String(this.data.keyword || "").trim()
+    const quickFilters = this.data.activeQuickFilters || []
+    const isFiltered = Boolean(keyword || quickFilters.length)
+    const useCache = !isFiltered && !options.force && homeProfilesCache && now - homeProfilesCacheAt < HOME_CACHE_TTL
 
     if (useCache) {
       this.setWaterfall(homeProfilesCache, { fromCache: true })
@@ -268,19 +301,33 @@ Page({
     this.setData({ loadingProfiles: true })
 
     try {
-      const candidates = await listHomeCandidates()
-      const source = candidates.length > 0
+      const candidates = await listHomeCandidates({
+        keyword,
+        quickFilters,
+        limit: HOME_PAGE_SIZE,
+        skip: 0,
+      })
+      const source = candidates.length > 0 || isFiltered
         ? candidates.map((item, index) => normalizeProfile(item, index))
         : fallbackProfiles
 
-      homeProfilesCache = source
-      homeProfilesCacheAt = Date.now()
+      if (!isFiltered) {
+        homeProfilesCache = source
+        homeProfilesCacheAt = Date.now()
+      }
       this.setWaterfall(source)
+      this.setData({
+        pageOffset: candidates.length,
+        hasMoreProfiles: candidates.length >= HOME_PAGE_SIZE,
+        searchMode: isFiltered,
+      })
+      return { count: source.length, isFiltered }
     } catch (error) {
       if (!this.data.hasLoadedProfiles) {
         this.setWaterfall(fallbackProfiles)
       }
       console.error(error)
+      return { count: 0, isFiltered }
     } finally {
       this.setData({ loadingProfiles: false })
     }
@@ -290,6 +337,41 @@ Page({
     homeProfilesCacheAt = 0
 
     await this.loadProfiles({ force: true })
+  },
+  async handleLoadMore() {
+    if (this.data.loadingProfiles || this.data.loadingMore || !this.data.hasMoreProfiles) {
+      return
+    }
+
+    this.setData({ loadingMore: true })
+    try {
+      const keyword = String(this.data.keyword || "").trim()
+      const quickFilters = this.data.activeQuickFilters || []
+      const candidates = await listHomeCandidates({
+        keyword,
+        quickFilters,
+        limit: HOME_PAGE_SIZE,
+        skip: this.data.pageOffset,
+      })
+      const currentItems = this.data.profileOrder || []
+      const nextItems = candidates.map((item, index) => normalizeProfile(item, this.data.pageOffset + index))
+      const mergedItems = currentItems.concat(nextItems)
+
+      if (!keyword && quickFilters.length === 0) {
+        homeProfilesCache = mergedItems
+        homeProfilesCacheAt = Date.now()
+      }
+      this.setWaterfall(mergedItems)
+      this.setData({
+        pageOffset: this.data.pageOffset + candidates.length,
+        hasMoreProfiles: candidates.length >= HOME_PAGE_SIZE,
+      })
+    } catch (error) {
+      wx.showToast({ title: "加载失败", icon: "none" })
+      console.error(error)
+    } finally {
+      this.setData({ loadingMore: false })
+    }
   },
   async onPullDownRefresh() {
     try {
@@ -346,26 +428,35 @@ Page({
     this.setData({ keyword: event.detail.value })
   },
   async handleSearch() {
-    const keyword = this.data.keyword.trim()
-    if (!keyword) {
-      await this.refreshHomeProfiles()
-      return
-    }
-
-    this.setData({ loadingProfiles: true })
     try {
-      const candidates = await searchHomeCandidates(keyword)
-      const source = candidates.map((item, index) => normalizeProfile(item, index))
-      this.setWaterfall(source)
-      if (source.length === 0) {
+      const result = await this.loadProfiles({ force: true })
+      if (result && result.isFiltered && result.count === 0) {
         wx.showToast({ title: "未找到匹配会员", icon: "none" })
       }
     } catch (error) {
       wx.showToast({ title: "搜索失败", icon: "none" })
       console.error(error)
-    } finally {
-      this.setData({ loadingProfiles: false })
     }
+  },
+  handleQuickFilterTap(event) {
+    const { key } = event.currentTarget.dataset
+    const activeQuickFilters = this.data.activeQuickFilters || []
+    const nextFilters = activeQuickFilters.includes(key)
+      ? activeQuickFilters.filter((item) => item !== key)
+      : activeQuickFilters.concat(key)
+
+    this.setData({
+      activeQuickFilters: nextFilters,
+      quickFilterItems: buildQuickFilterItems(nextFilters),
+    })
+    this.loadProfiles({ force: true })
+  },
+  handleClearQuickFilters() {
+    this.setData({
+      activeQuickFilters: [],
+      quickFilterItems: buildQuickFilterItems(),
+    })
+    this.loadProfiles({ force: true })
   },
   async handleBrandTap() {
     const initTapCount = this.data.initTapCount + 1

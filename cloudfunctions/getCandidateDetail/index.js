@@ -40,6 +40,11 @@ const SEARCH_SYNONYMS = {
   稳定: ["稳定", "稳定工作", "工作稳定", "体制内", "公务员", "事业单位", "国企", "教师", "医生", "银行", "光大银行"],
   稳定工作: ["稳定工作", "工作稳定", "稳定", "体制内", "公务员", "事业单位", "国企", "银行", "光大银行"],
   银行: ["银行", "光大银行", "体制内", "稳定工作"],
+  二婚: ["二婚", "离异", "离婚", "再婚", "二婚带娃", "离异带娃", "离异带孩", "带娃", "带孩"],
+  离异: ["离异", "离婚", "二婚", "再婚", "离异带娃", "离异带孩", "带娃", "带孩"],
+  离婚: ["离婚", "离异", "二婚", "再婚", "离异带娃", "二婚带娃", "带娃", "带孩"],
+  再婚: ["再婚", "二婚", "离异", "离婚"],
+  带娃: ["带娃", "带孩", "离异带娃", "二婚带娃", "离异", "二婚"],
   长乐: ["长乐"],
   本科: ["本科", "大学"],
   硕士: ["硕士", "研究生"],
@@ -48,6 +53,27 @@ const SEARCH_SYNONYMS = {
   女: ["女", "女生", "女孩", "女士"],
   男: ["男", "男生", "男孩", "男士"],
 }
+
+const QUICK_FILTER_KEYS = ["male", "female", "secondMarriage", "stableJob", "fuzhou", "changle"]
+const SECOND_MARRIAGE_TERMS = ["离异", "离婚", "二婚", "再婚", "离异带娃", "离异带孩", "带娃", "带孩"]
+const STABLE_JOB_TERMS = [
+  "公务员",
+  "国企",
+  "央企",
+  "事业单位",
+  "体制内",
+  "编制",
+  "在编",
+  "机关",
+  "教师",
+  "医生",
+  "银行",
+  "电网",
+  "烟草",
+  "铁路",
+  "稳定工作",
+  "工作稳定",
+]
 
 function normalizeSearchText(value) {
   if (Array.isArray(value)) {
@@ -63,6 +89,107 @@ function normalizeSearchText(value) {
 
 function uniqueItems(items) {
   return Array.from(new Set(items.filter(Boolean)))
+}
+
+function normalizeQuickFilters(value) {
+  if (!Array.isArray(value)) {
+    return []
+  }
+
+  return uniqueItems(value.map((item) => String(item || "").trim()).filter((item) => QUICK_FILTER_KEYS.includes(item)))
+}
+
+function getCandidateText(candidate, keys) {
+  return normalizeSearchText(keys.map((key) => {
+    const value = candidate[key]
+    if (Array.isArray(value)) return value.join(" ")
+    if (value && typeof value === "object") return Object.values(value).filter(Boolean).join(" ")
+    return value || ""
+  }).join(" "))
+}
+
+function includesAny(text, terms) {
+  const normalizedText = normalizeSearchText(text)
+  return terms.some((term) => normalizedText.includes(normalizeSearchText(term)))
+}
+
+function isSecondMarriageCandidate(candidate) {
+  const text = getCandidateText(candidate, [
+    "tags",
+    "sourceSummary",
+    "rawText",
+    "familyBackground",
+    "assets",
+    "matchRequirements",
+  ])
+  if (!text) {
+    return false
+  }
+
+  if (/(不接受|不要|不能接受|拒绝)(离异|离婚|二婚|再婚|带娃|带孩)/.test(text)) {
+    return false
+  }
+
+  return includesAny(text, SECOND_MARRIAGE_TERMS)
+}
+
+function isStableJobCandidate(candidate) {
+  const text = getCandidateText(candidate, [
+    "tags",
+    "occupation",
+    "sourceSummary",
+    "rawText",
+    "familyBackground",
+    "matchRequirements",
+  ])
+  return includesAny(text, STABLE_JOB_TERMS)
+}
+
+function getLocationBucket(candidate) {
+  const text = getCandidateText(candidate, ["currentAddress", "ancestralHome"])
+  if (!text) {
+    return ""
+  }
+
+  // 地址里同时出现“福州”和“长乐”时，按更精确的长乐归类。
+  if (text.includes("长乐")) {
+    return "changle"
+  }
+
+  if (text.includes("福州")) {
+    return "fuzhou"
+  }
+
+  return ""
+}
+
+function evaluateQuickFilters(candidate, quickFilters) {
+  if (!quickFilters.length) {
+    return true
+  }
+
+  const genderFilters = quickFilters.filter((item) => item === "male" || item === "female")
+  if (genderFilters.length > 0) {
+    const expectedGenders = genderFilters.map((item) => item === "male" ? "男" : "女")
+    if (!expectedGenders.includes(candidate.gender)) {
+      return false
+    }
+  }
+
+  const locationFilters = quickFilters.filter((item) => item === "fuzhou" || item === "changle")
+  if (locationFilters.length > 0 && !locationFilters.includes(getLocationBucket(candidate))) {
+    return false
+  }
+
+  if (quickFilters.includes("secondMarriage") && !isSecondMarriageCandidate(candidate)) {
+    return false
+  }
+
+  if (quickFilters.includes("stableJob") && !isStableJobCandidate(candidate)) {
+    return false
+  }
+
+  return true
 }
 
 function parseAgeCriteria(keyword) {
@@ -339,6 +466,10 @@ function getSortTimestamp(candidate) {
   return toTimestamp(candidate.updatedAt || candidate.publishedAt || candidate.createdAt)
 }
 
+function getCandidateUploadTimestamp(candidate) {
+  return toTimestamp(candidate.createdAt || candidate.publishedAt || candidate.updatedAt)
+}
+
 async function buildPhotoUrls(photoAssetIds) {
   if (!Array.isArray(photoAssetIds) || photoAssetIds.length === 0) {
     return []
@@ -372,11 +503,6 @@ function redactCandidate(candidate, access) {
 
   if (!access.canViewName) {
     delete safeCandidate.name
-  }
-
-  if (!access.canViewPhotos) {
-    safeCandidate.photoAssetIds = []
-    safeCandidate.photoSlots = safeCandidate.photosPresent ? [1] : []
   }
 
   safeCandidate.canViewPhotos = access.canViewPhotos
@@ -665,7 +791,9 @@ exports.main = async (event = {}) => {
     const result = await db.collection("candidates").limit(100).get()
     const filter = event.filter || "all"
     const keyword = event.keyword || ""
+    const quickFilters = normalizeQuickFilters(event.quickFilters)
     const limit = normalizeLimit(event.limit, 12, 30)
+    const skip = Math.max(0, Number(event.skip || 0) || 0)
     const includePhotos = event.includePhotos !== false
     const currentUser = await resolveDebugCurrentUser(event)
     const ageCriteria = parseAgeCriteria(keyword)
@@ -673,6 +801,7 @@ exports.main = async (event = {}) => {
 
     const filteredItems = result.data
       .filter((item) => filter === "all" || item.profileStatus === filter)
+      .filter((item) => evaluateQuickFilters(item, quickFilters))
       .map((item) => ({
         item,
         search: evaluateSearchCandidate(item, searchGroups, ageCriteria),
@@ -683,9 +812,9 @@ exports.main = async (event = {}) => {
           return right.search.score - left.search.score
         }
 
-        return getSortTimestamp(right.item) - getSortTimestamp(left.item)
+        return getCandidateUploadTimestamp(right.item) - getCandidateUploadTimestamp(left.item)
       })
-      .slice(0, limit)
+      .slice(skip, skip + limit)
 
     const items = await Promise.all(filteredItems.map(async ({ item, search }) => {
       const access = await resolveAccess(currentUser, item, "")
@@ -695,10 +824,14 @@ exports.main = async (event = {}) => {
       safeItem.hitReasons = search.hitReasons
 
       if (includePhotos) {
+        const rawThumbnailAssetIds = Array.isArray(item.thumbnailAssetIds) ? item.thumbnailAssetIds : []
         const rawPhotoAssetIds = Array.isArray(item.photoAssetIds) ? item.photoAssetIds : []
+        const primaryThumbnailId = rawThumbnailAssetIds[0] ? [rawThumbnailAssetIds[0]] : []
         const primaryPhotoId = rawPhotoAssetIds[0] ? [rawPhotoAssetIds[0]] : []
+        safeItem.thumbnailUrls = await buildPhotoUrls(primaryThumbnailId.length ? primaryThumbnailId : primaryPhotoId)
         safeItem.photoUrls = await buildPhotoUrls(primaryPhotoId)
       } else {
+        safeItem.thumbnailUrls = []
         safeItem.photoUrls = []
       }
 

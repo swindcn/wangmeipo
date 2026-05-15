@@ -26,7 +26,10 @@ function normalizeMediaObject(item) {
   if (next.avatarUrl) next.avatarUrl = normalizeCloudFileUrl(next.avatarUrl)
   if (next.photoUrl) next.photoUrl = normalizeCloudFileUrl(next.photoUrl)
   if (next.imageUrl) next.imageUrl = normalizeCloudFileUrl(next.imageUrl)
-  if (Array.isArray(next.photoUrls)) next.photoUrls = normalizeCloudFileList(next.photoUrls)
+  // Cloud functions return signed HTTPS temp URLs for display. Keep their query
+  // signature intact; converting them back to cloud:// can make fresh images blank.
+  if (Array.isArray(next.photoUrls)) next.photoUrls = next.photoUrls.filter(Boolean)
+  if (Array.isArray(next.thumbnailUrls)) next.thumbnailUrls = next.thumbnailUrls.filter(Boolean)
 
   return next
 }
@@ -116,15 +119,24 @@ async function listCandidates(params) {
     mode: "list",
     filter: params && params.filter ? params.filter : "all",
     keyword: params && params.keyword ? params.keyword : "",
+    quickFilters: params && Array.isArray(params.quickFilters) ? params.quickFilters : [],
     limit: params && params.limit ? params.limit : 12,
+    skip: params && params.skip ? params.skip : 0,
     includePhotos: !(params && params.includePhotos === false),
   })
   return normalizeMediaList(unwrapResult(response).items || [])
 }
 
-async function listHomeCandidates() {
+async function listHomeCandidates(params) {
   try {
-    return await listCandidates({ filter: "published", limit: 12, includePhotos: true })
+    return await listCandidates({
+      filter: "published",
+      keyword: params && params.keyword ? params.keyword : "",
+      quickFilters: params && Array.isArray(params.quickFilters) ? params.quickFilters : [],
+      limit: params && params.limit ? params.limit : 12,
+      skip: params && params.skip ? params.skip : 0,
+      includePhotos: true,
+    })
   } catch (error) {
     return []
   }

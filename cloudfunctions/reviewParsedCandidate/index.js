@@ -51,6 +51,10 @@ exports.main = async (event) => {
     return { ok: false, error: "invalid action" }
   }
 
+  if (action === "approve" && patch && patch.gender !== "男" && patch.gender !== "女") {
+    return { ok: false, error: "gender is required" }
+  }
+
   const actionConfig = {
     approve: {
       profileStatus: "published",

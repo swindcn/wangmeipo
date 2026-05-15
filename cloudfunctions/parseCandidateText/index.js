@@ -143,6 +143,41 @@ function inferGender(text, explicitGender) {
   return ""
 }
 
+function inferWorkLocation(text) {
+  const content = normalizeText(text)
+  const patterns = [
+    /工作(?:在|地|地点|单位在)\s*([\u4e00-\u9fa5A-Za-z0-9·\-]{2,18})/,
+    /在\s*([\u4e00-\u9fa5A-Za-z0-9·\-]{2,18})\s*(?:工作|上班|任职|就业)/,
+    /([\u4e00-\u9fa5A-Za-z0-9·\-]{2,18})\s*(?:工作|上班|任职|就业)/,
+  ]
+
+  for (const pattern of patterns) {
+    const matched = content.match(pattern)
+    if (matched && matched[1]) {
+      return cleanWorkLocation(matched[1])
+    }
+  }
+
+  return ""
+}
+
+function cleanWorkLocation(value) {
+  const text = cleanValue(value)
+  if (!text) return ""
+
+  const localPlace = text.match(/^(长乐|福州|福清|仓山|鼓楼|台江|晋安|马尾|闽侯|连江|罗源|闽清|永泰|平潭|金峰|航城|吴航|营前|漳港|江田|松下|古槐|文武砂|鹤上|潭头|梅花|文岭|玉田|首占|罗联|猴屿)/)
+  if (localPlace) return localPlace[1]
+
+  const suffixPlace = text.match(/^(.{2,10}?(?:省|市|区|县|镇|乡|街道|开发区|新区))/)
+  if (suffixPlace) return suffixPlace[1]
+
+  if (/(公司|集团|银行|医院|学校|单位|工厂|厂|局|所|中心|店|企业|机构)/.test(text)) {
+    return ""
+  }
+
+  return text.length <= 8 ? text : ""
+}
+
 function buildRuleProfile(rawText) {
   const text = normalizeText(rawText)
   const birthYear = normalizeYear(extractValue(text, ["出生", "出生年份", "出生年", "年份"])) || normalizeYear(text)
@@ -165,7 +200,7 @@ function buildRuleProfile(rawText) {
     personality: extractValue(text, ["性格", "性情"]),
     assets: inferAssets(text),
     familyBackground: extractValue(text, ["家庭成员", "家庭情况", "家庭", "家庭背景", "父母情况"]),
-    currentAddress: extractValue(text, ["常住地址", "常住地", "现居", "现住址", "地址"]),
+    currentAddress: extractValue(text, ["常住地址", "常住地", "现居", "现住址", "地址"]) || inferWorkLocation(text),
     matchRequirements: extractValue(text, ["相亲需求", "择偶要求", "择偶需求", "要求"]),
     phone: extractValue(text, ["联系电话", "电话", "联系方式", "手机号"]),
   }
@@ -507,6 +542,10 @@ function sanitizeProfile(profile, rawText) {
   const birthYear = normalizeYear(next.birthYear)
   const age = birthYear ? deriveAgeFromBirthYear(birthYear) : valueToString(next.age)
   const zodiac = valueToString(next.zodiac) || deriveZodiacFromBirthYear(birthYear)
+  const currentAddress = valueToString(next.currentAddress) || inferWorkLocation([
+    rawText,
+    next.occupation,
+  ].filter(Boolean).join("\n"))
 
   return {
     name: valueToString(next.name),
@@ -523,7 +562,7 @@ function sanitizeProfile(profile, rawText) {
     personality: valueToString(next.personality),
     assets: valueToString(next.assets),
     familyBackground: valueToString(next.familyBackground),
-    currentAddress: valueToString(next.currentAddress),
+    currentAddress,
     matchRequirements: valueToString(next.matchRequirements),
     phone: valueToString(next.phone),
   }

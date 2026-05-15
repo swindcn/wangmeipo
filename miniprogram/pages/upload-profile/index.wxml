@@ -38,7 +38,7 @@
         <input class="line-input" value="{{form.birthYear}}" data-field="birthYear" bindinput="handleFieldInput" bindblur="handleDerivedFieldBlur" placeholder="未填写" />
       </view>
       <view class="edit-field">
-        <view class="field-label">性别</view>
+        <view class="field-label required">性别</view>
         <picker mode="selector" range="{{pickerOptions.gender}}" data-field="gender" data-source="gender" bindchange="handlePickerChange">
           <view class="line-input picker-value">{{form.genderDisplay}}</view>
         </picker>

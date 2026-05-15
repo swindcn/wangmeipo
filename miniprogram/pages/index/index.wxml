@@ -20,6 +20,21 @@
     <button class="search-button" bindtap="handleSearch">⌕</button>
   </view>
 
+  <view class="quick-filter-row">
+    <block wx:for="{{quickFilterItems}}" wx:key="key">
+      <view
+        class="{{item.className}}"
+        data-key="{{item.key}}"
+        bindtap="handleQuickFilterTap"
+      >{{item.label}}</view>
+    </block>
+    <view
+      wx:if="{{activeQuickFilters.length}}"
+      class="quick-filter-clear"
+      bindtap="handleClearQuickFilters"
+    >×</view>
+  </view>
+
   <scroll-view
     class="profile-scroll"
     style="height: {{profileScrollHeight}}px;"
@@ -28,6 +43,7 @@
     refresher-enabled
     refresher-triggered="{{refresherTriggered}}"
     bindrefresherrefresh="handleScrollRefresh"
+    bindscrolltolower="handleLoadMore"
   >
     <view wx:if="{{loadingProfiles && !hasLoadedProfiles}}" class="home-loading">加载中...</view>
     <view class="waterfall">
@@ -37,8 +53,10 @@
             <image class="profile-image {{item.isPrivateLocked ? 'profile-image-blurred' : ''}}" src="{{item.imageUrl}}" mode="aspectFill" lazy-load="true" webp="true" />
             <view wx:if="{{item.isPrivateLocked}}" class="profile-photo-lock">照片未开放</view>
             <view class="profile-overlay">
-              <text class="gender {{item.genderClass}}">{{item.genderIcon}}</text>
-              <text class="profile-age">{{item.age}}</text>
+              <view class="profile-basic">
+                <text class="profile-age">{{item.age}}</text>
+                <text wx:if="{{item.zodiac}}" class="profile-zodiac">{{item.zodiac}}</text>
+              </view>
               <view class="tag-lines">
                 <text wx:for="{{item.tags}}" wx:key="*this" class="profile-tag">{{item}}</text>
               </view>
@@ -53,8 +71,10 @@
             <image class="profile-image {{item.isPrivateLocked ? 'profile-image-blurred' : ''}}" src="{{item.imageUrl}}" mode="aspectFill" lazy-load="true" webp="true" />
             <view wx:if="{{item.isPrivateLocked}}" class="profile-photo-lock">照片未开放</view>
             <view class="profile-overlay">
-              <text class="gender {{item.genderClass}}">{{item.genderIcon}}</text>
-              <text class="profile-age">{{item.age}}</text>
+              <view class="profile-basic">
+                <text class="profile-age">{{item.age}}</text>
+                <text wx:if="{{item.zodiac}}" class="profile-zodiac">{{item.zodiac}}</text>
+              </view>
               <view class="tag-lines">
                 <text wx:for="{{item.tags}}" wx:key="*this" class="profile-tag">{{item}}</text>
               </view>
@@ -63,6 +83,8 @@
         </block>
       </view>
     </view>
+    <view wx:if="{{loadingMore}}" class="load-more-text">加载中...</view>
+    <view wx:elif="{{hasLoadedProfiles && !hasMoreProfiles && profileOrder.length}}" class="load-more-text">没有更多了</view>
   </scroll-view>
 
   <view class="bottom-tabs">

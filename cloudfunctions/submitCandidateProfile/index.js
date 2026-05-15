@@ -163,6 +163,7 @@ exports.main = async (event = {}) => {
   const now = new Date()
   const profile = event.profile || {}
   const photoAssetIds = Array.isArray(event.photoAssetIds) ? event.photoAssetIds.slice(0, 3) : []
+  const thumbnailAssetIds = Array.isArray(event.thumbnailAssetIds) ? event.thumbnailAssetIds.slice(0, 3) : []
   const tags = Array.isArray(event.tags) ? event.tags.map(compactString).filter(Boolean).slice(0, 20) : []
   const rawText = compactString(event.rawText)
   const submitter = event.submitter || {}
@@ -172,6 +173,7 @@ exports.main = async (event = {}) => {
   const name = compactString(profile.name)
   const birthYear = normalizeBirthYear(profile.birthYear)
   const age = deriveAgeFromBirthYear(birthYear) || toNumber(profile.age)
+  const gender = compactString(profile.gender)
   const zodiac = compactString(profile.zodiac) || deriveZodiacFromBirthYear(birthYear)
   const heightCm = normalizeHeightCm(profile.heightCm) || normalizeHeightCm(extractValue(rawText, ["身高", "身长", "个子"]))
   const weightKg = normalizeWeightKg(profile.weightKg) || normalizeWeightKg(extractValue(rawText, ["体重", "重量"]))
@@ -181,6 +183,13 @@ exports.main = async (event = {}) => {
     return {
       ok: false,
       error: "age or birthYear is required",
+    }
+  }
+
+  if (gender !== "男" && gender !== "女") {
+    return {
+      ok: false,
+      error: "gender is required",
     }
   }
 
@@ -205,7 +214,7 @@ exports.main = async (event = {}) => {
     profileStatus,
     visibilityLevel: "text_only",
     name,
-    gender: compactString(profile.gender),
+    gender,
     zodiac,
     birthYear,
     age,
@@ -229,6 +238,7 @@ exports.main = async (event = {}) => {
     tags,
     photosPresent: photoAssetIds.length > 0,
     photoAssetIds,
+    thumbnailAssetIds,
     sourceSummary: buildSourceSummary(profile),
     rawText,
     confidence: {
@@ -252,6 +262,7 @@ exports.main = async (event = {}) => {
       sourceMessageId: "",
       rawText,
       photoAssetIds,
+      thumbnailAssetIds,
       remoteImageUrls: [],
       sourceUrl: "",
       parseStatus: "manual_submitted",

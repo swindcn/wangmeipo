@@ -366,6 +366,41 @@ function inferHouseValue(rawText) {
   return matchedLine || null
 }
 
+function inferWorkLocation(text) {
+  const content = normalizeWhitespace(text)
+  const patterns = [
+    /工作(?:在|地|地点|单位在)\s*([\u4e00-\u9fa5A-Za-z0-9·\-]{2,18})/,
+    /在\s*([\u4e00-\u9fa5A-Za-z0-9·\-]{2,18})\s*(?:工作|上班|任职|就业)/,
+    /([\u4e00-\u9fa5A-Za-z0-9·\-]{2,18})\s*(?:工作|上班|任职|就业)/,
+  ]
+
+  for (const pattern of patterns) {
+    const matched = content.match(pattern)
+    if (matched && matched[1]) {
+      return cleanWorkLocation(matched[1])
+    }
+  }
+
+  return ""
+}
+
+function cleanWorkLocation(value) {
+  const text = String(value || "").trim().replace(/[。；;，,、\s]+$/, "")
+  if (!text) return ""
+
+  const localPlace = text.match(/^(长乐|福州|福清|仓山|鼓楼|台江|晋安|马尾|闽侯|连江|罗源|闽清|永泰|平潭|金峰|航城|吴航|营前|漳港|江田|松下|古槐|文武砂|鹤上|潭头|梅花|文岭|玉田|首占|罗联|猴屿)/)
+  if (localPlace) return localPlace[1]
+
+  const suffixPlace = text.match(/^(.{2,10}?(?:省|市|区|县|镇|乡|街道|开发区|新区))/)
+  if (suffixPlace) return suffixPlace[1]
+
+  if (/(公司|集团|银行|医院|学校|单位|工厂|厂|局|所|中心|店|企业|机构)/.test(text)) {
+    return ""
+  }
+
+  return text.length <= 8 ? text : ""
+}
+
 function buildRuleBasedProfile(source, combinedText) {
   const normalizedText = replaceLabelAliases(combinedText)
   const education = normalizeMappedValue("education", extractValue(normalizedText, ["学历", "文化程度"]))
@@ -405,7 +440,7 @@ function buildRuleBasedProfile(source, combinedText) {
       car: carValue || null,
       other: null,
     },
-    currentAddress: extractValue(normalizedText, ["常住地址", "现居", "现住址", "居住地"]),
+    currentAddress: extractValue(normalizedText, ["常住地址", "现居", "现住址", "居住地"]) || inferWorkLocation(normalizedText),
     matchRequirements: extractValue(normalizedText, ["相亲需求", "择偶要求", "择偶需求", "要求"]),
     phone: extractValue(normalizedText, ["联系电话", "电话", "联系方式", "手机号"]),
     photosPresent: Array.isArray(source.photoAssetIds) && source.photoAssetIds.length > 0,
@@ -595,6 +630,10 @@ function sanitizeStructuredProfile(profile, source, combinedText) {
     : 0.78
   const sourceType = String(source.sourceType || "")
   const requiresReview = sourceType.startsWith("official_account") || sourceType === "chat_forward"
+  const currentAddress = safeProfile.currentAddress || inferWorkLocation([
+    combinedText,
+    safeProfile.occupation,
+  ].filter(Boolean).join("\n"))
 
   return {
     profileStatus: requiresReview || overallConfidence < 0.85 ? "pending_review" : "published",
@@ -617,7 +656,7 @@ function sanitizeStructuredProfile(profile, source, combinedText) {
       car: safeProfile.assets && safeProfile.assets.car ? safeProfile.assets.car : null,
       other: safeProfile.assets && safeProfile.assets.other ? safeProfile.assets.other : null,
     },
-    currentAddress: safeProfile.currentAddress || null,
+    currentAddress: currentAddress || null,
     matchRequirements: safeProfile.matchRequirements || null,
     phone: safeProfile.phone || null,
     photosPresent: Array.isArray(source.photoAssetIds) && source.photoAssetIds.length > 0,

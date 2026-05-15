@@ -110,6 +110,41 @@ function inferAssets(text) {
   return line ? cleanValue(line) : ""
 }
 
+function inferWorkLocation(text) {
+  const content = normalizeText(text)
+  const patterns = [
+    /工作(?:在|地|地点|单位在)\s*([\u4e00-\u9fa5A-Za-z0-9·\-]{2,18})/,
+    /在\s*([\u4e00-\u9fa5A-Za-z0-9·\-]{2,18})\s*(?:工作|上班|任职|就业)/,
+    /([\u4e00-\u9fa5A-Za-z0-9·\-]{2,18})\s*(?:工作|上班|任职|就业)/,
+  ]
+
+  for (const pattern of patterns) {
+    const matched = content.match(pattern)
+    if (matched && matched[1]) {
+      return cleanWorkLocation(matched[1])
+    }
+  }
+
+  return ""
+}
+
+function cleanWorkLocation(value) {
+  const text = cleanValue(value)
+  if (!text) return ""
+
+  const localPlace = text.match(/^(长乐|福州|福清|仓山|鼓楼|台江|晋安|马尾|闽侯|连江|罗源|闽清|永泰|平潭|金峰|航城|吴航|营前|漳港|江田|松下|古槐|文武砂|鹤上|潭头|梅花|文岭|玉田|首占|罗联|猴屿)/)
+  if (localPlace) return localPlace[1]
+
+  const suffixPlace = text.match(/^(.{2,10}?(?:省|市|区|县|镇|乡|街道|开发区|新区))/)
+  if (suffixPlace) return suffixPlace[1]
+
+  if (/(公司|集团|银行|医院|学校|单位|工厂|厂|局|所|中心|店|企业|机构)/.test(text)) {
+    return ""
+  }
+
+  return text.length <= 8 ? text : ""
+}
+
 function getCurrentYear() {
   return new Date().getFullYear()
 }
@@ -214,9 +249,11 @@ function buildDefaultForm() {
 }
 
 function normalizeFormDisplays(form) {
+  const gender = form.gender === "男" || form.gender === "女" ? form.gender : ""
   return {
     ...form,
-    genderDisplay: form.gender || "选择",
+    gender,
+    genderDisplay: gender || "必选",
     zodiacDisplay: form.zodiac || "选择",
     educationDisplay: form.education || "选择",
     religionDisplay: form.religion || "选择",
@@ -355,9 +392,11 @@ Page({
       const selectedTags = Array.isArray(candidate.tags) && candidate.tags.length > 0 ? candidate.tags : []
       const photoUrls = Array.isArray(candidate.photoUrls) ? candidate.photoUrls : []
       const photoAssetIds = Array.isArray(candidate.photoAssetIds) ? candidate.photoAssetIds : []
+      const thumbnailAssetIds = Array.isArray(candidate.thumbnailAssetIds) ? candidate.thumbnailAssetIds : []
       const photoItems = photoUrls.map((url, index) => ({
         url,
         fileId: photoAssetIds[index] || "",
+        thumbnailFileId: thumbnailAssetIds[index] || "",
         isRemote: true,
       }))
 
@@ -394,6 +433,7 @@ Page({
         const nextPhotos = result.tempFiles.map((item) => ({
           url: item.tempFilePath,
           fileId: "",
+          thumbnailFileId: "",
           isRemote: false,
         }))
         this.setData({ photoItems: this.data.photoItems.concat(nextPhotos).slice(0, 3) })
@@ -460,7 +500,7 @@ Page({
       personality: extractValue(text, ["性格"]),
       assets: inferAssets(text),
       familyBackground: extractValue(text, ["家庭成员", "家庭情况", "家庭"]),
-      currentAddress: extractValue(text, ["常住地址", "常住地", "地址"]),
+      currentAddress: extractValue(text, ["常住地址", "常住地", "地址"]) || inferWorkLocation(text),
       matchRequirements: extractValue(text, ["相亲需求", "择偶要求", "要求"]),
     }
     form = applyBirthYearDerivedFields(form)
@@ -484,7 +524,10 @@ Page({
       personality: nextProfile.personality || "",
       assets: nextProfile.assets || "",
       familyBackground: nextProfile.familyBackground || "",
-      currentAddress: nextProfile.currentAddress || "",
+      currentAddress: nextProfile.currentAddress || inferWorkLocation([
+        this.data.rawText,
+        nextProfile.occupation,
+      ].filter(Boolean).join("\n")),
       matchRequirements: nextProfile.matchRequirements || "",
       phone: nextProfile.phone || "",
     }
@@ -605,6 +648,8 @@ Page({
     wx.navigateBack()
   },
   handleSave() {
+    if (!this.ensureGenderSelected()) return
+
     if (this.data.mode === "review") {
       this.reviewProfile("approve")
       return
@@ -617,7 +662,16 @@ Page({
 
     this.submitProfile()
   },
-  buildCandidatePatch(photoAssetIds) {
+  ensureGenderSelected() {
+    const gender = this.data.form && this.data.form.gender
+    if (gender === "男" || gender === "女") {
+      return true
+    }
+
+    wx.showToast({ title: "请选择性别", icon: "none" })
+    return false
+  },
+  buildCandidatePatch(photoAssetIds, thumbnailAssetIds) {
     const form = this.data.form
 
     return {
@@ -646,10 +700,15 @@ Page({
       rawText: this.data.rawText,
       photosPresent: photoAssetIds.length > 0,
       photoAssetIds,
+      thumbnailAssetIds,
     }
   },
   async submitProfile() {
     const form = this.data.form
+    if (!this.ensureGenderSelected()) {
+      return
+    }
+
     if (!form.age && !form.birthYear) {
       wx.showToast({ title: "请补年龄或出生年份", icon: "none" })
       return
@@ -667,12 +726,13 @@ Page({
       const isBound = await this.ensureCurrentUserBound()
       if (!isBound) return
 
-      const photoAssetIds = await this.uploadPhotos()
+      const { photoAssetIds, thumbnailAssetIds } = await this.uploadPhotoSet()
       const result = await submitCandidateProfile({
         profile: form,
         tags: this.data.selectedTags,
         rawText: this.data.rawText,
         photoAssetIds,
+        thumbnailAssetIds,
         submitter: this.data.submitter,
       })
 
@@ -700,16 +760,17 @@ Page({
   },
   async reviewProfile(action) {
     if (!this.data.candidateId) return
+    if (action === "approve" && !this.ensureGenderSelected()) return
 
     this.setData({ saving: true })
     this.setData({ rejectLoading: action === "reject" })
     wx.showLoading({ title: this.data.mode === "edit" ? "保存中" : (action === "approve" ? "同意中" : "拒绝中") })
 
     try {
-      const photoAssetIds = await this.uploadPhotos()
+      const { photoAssetIds, thumbnailAssetIds } = await this.uploadPhotoSet()
       const result = await reviewCandidate(this.data.candidateId, {
         action,
-        patch: this.buildCandidatePatch(photoAssetIds),
+        patch: this.buildCandidatePatch(photoAssetIds, thumbnailAssetIds),
       })
 
       if (!result.ok) {
@@ -729,15 +790,17 @@ Page({
       this.setData({ saving: false, rejectLoading: false })
     }
   },
-  async uploadPhotos() {
+  async uploadPhotoSet() {
     const nextPhotoItems = this.data.photoItems.slice()
-    const uploadedFileIds = []
+    const photoAssetIds = []
+    const thumbnailAssetIds = []
 
     for (let index = 0; index < nextPhotoItems.length; index += 1) {
       const item = nextPhotoItems[index]
 
       if (item.fileId) {
-        uploadedFileIds.push(item.fileId)
+        photoAssetIds.push(item.fileId)
+        thumbnailAssetIds.push(item.thumbnailFileId || "")
         continue
       }
 
@@ -748,18 +811,38 @@ Page({
         filePath: item.url,
       })
       const fileId = result.fileID || ""
+      const thumbnailFileId = fileId ? await this.uploadThumbnail(item.url, index) : ""
       if (fileId) {
         nextPhotoItems[index] = {
           ...item,
           fileId,
+          thumbnailFileId,
           isRemote: true,
         }
-        uploadedFileIds.push(fileId)
+        photoAssetIds.push(fileId)
+        thumbnailAssetIds.push(thumbnailFileId)
       }
     }
 
     this.setData({ photoItems: nextPhotoItems })
-    return uploadedFileIds
+    return { photoAssetIds, thumbnailAssetIds }
+  },
+  async uploadThumbnail(filePath, index) {
+    try {
+      const compressed = await wx.compressImage({
+        src: filePath,
+        quality: 45,
+      })
+      const extension = this.getImageExtension(compressed.tempFilePath || filePath)
+      const result = await wx.cloud.uploadFile({
+        cloudPath: `candidate-thumbnails/${Date.now()}-${index}.${extension}`,
+        filePath: compressed.tempFilePath || filePath,
+      })
+      return result.fileID || ""
+    } catch (error) {
+      console.error("缩略图生成失败", error)
+      return ""
+    }
   },
   getImageExtension(filePath) {
     const normalized = String(filePath || "").toLowerCase()
