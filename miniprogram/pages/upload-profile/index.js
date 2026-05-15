@@ -1,13 +1,24 @@
 const {
   getCandidateDetail,
   getDashboardSummary,
+  manageCandidateTags,
   parseCandidateText,
   reviewCandidate,
   submitCandidateProfile,
   upsertCurrentUser,
 } = require("../../utils/api")
 
-const availableTags = ["美女", "帅哥", "聘礼高", "谢媒费高", "离异", "家境好", "公务员", "事业单位", "要求多"]
+const fallbackTagConfigs = [
+  { name: "美女", scope: "female" },
+  { name: "聘礼高", scope: "male" },
+  { name: "帅哥", scope: "male" },
+  { name: "谢媒费高", scope: "common" },
+  { name: "离异", scope: "common" },
+  { name: "家境好", scope: "common" },
+  { name: "公务员", scope: "common" },
+  { name: "事业单位", scope: "common" },
+  { name: "要求多", scope: "common" },
+]
 
 const zodiacList = ["鼠", "牛", "虎", "兔", "龙", "蛇", "马", "羊", "猴", "鸡", "狗", "猪"]
 const genderList = ["男", "女"]
@@ -248,6 +259,52 @@ function buildDefaultForm() {
   }
 }
 
+function normalizeTagConfigs(tags) {
+  const seen = {}
+  const result = []
+  const source = Array.isArray(tags) && tags.length > 0 ? tags : fallbackTagConfigs
+
+  source.forEach((item) => {
+    const name = String(item && item.name ? item.name : item || "").trim()
+    if (!name || seen[name]) return
+    const scope = item && (item.scope === "male" || item.scope === "female" || item.scope === "common")
+      ? item.scope
+      : "common"
+    seen[name] = true
+    result.push({ name, scope })
+  })
+
+  return result
+}
+
+function isTagVisibleForGender(tag, gender) {
+  if (!tag || tag.scope === "common") return true
+  if (gender === "男") return tag.scope === "male"
+  if (gender === "女") return tag.scope === "female"
+  return false
+}
+
+function buildTagState(allTags, gender, selectedTags) {
+  const normalizedTags = normalizeTagConfigs(allTags)
+  const visibleTags = normalizedTags.filter((tag) => isTagVisibleForGender(tag, gender))
+  const visibleNames = visibleTags.map((tag) => tag.name)
+  const visibleNameSet = visibleNames.reduce((result, name) => {
+    result[name] = true
+    return result
+  }, {})
+  const nextSelectedTags = (Array.isArray(selectedTags) ? selectedTags : []).filter((name) => visibleNameSet[name])
+
+  return {
+    allTags: normalizedTags,
+    tags: visibleNames,
+    selectedTags: nextSelectedTags,
+    tagItems: visibleNames.map((name) => ({
+      name,
+      className: nextSelectedTags.includes(name) ? "tag-pill selected" : "tag-pill",
+    })),
+  }
+}
+
 function normalizeFormDisplays(form) {
   const gender = form.gender === "男" || form.gender === "女" ? form.gender : ""
   return {
@@ -317,11 +374,9 @@ Page({
     rejectLoading: false,
     photoItems: [],
     rawText: "",
-    tags: availableTags,
-    tagItems: availableTags.map((item) => ({
-      name: item,
-      className: "tag-pill",
-    })),
+    allTags: fallbackTagConfigs,
+    tags: buildTagState(fallbackTagConfigs, "", []).tags,
+    tagItems: buildTagState(fallbackTagConfigs, "", []).tagItems,
     selectedTags: [],
     pickerOptions: {
       gender: genderList,
@@ -363,6 +418,8 @@ Page({
     if ((mode === "review" || mode === "edit") && query.id) {
       this.loadReviewCandidate(query.id)
     }
+
+    this.loadCandidateTags()
   },
   onShow() {
     if (this.data.mode === "create") {
@@ -400,14 +457,15 @@ Page({
         isRemote: true,
       }))
 
+      const form = buildFormFromCandidate(candidate)
+      const tagState = buildTagState(this.data.allTags, form.gender, selectedTags)
+
       this.setData({
-        form: buildFormFromCandidate(candidate),
+        form,
         rawText: candidate.rawText || "",
-        selectedTags,
-        tagItems: this.data.tags.map((item) => ({
-          name: item,
-          className: selectedTags.includes(item) ? "tag-pill selected" : "tag-pill",
-        })),
+        tags: tagState.tags,
+        selectedTags: tagState.selectedTags,
+        tagItems: tagState.tagItems,
         photoItems,
         submitter: buildSubmitterSnapshot(candidate.submitter || {}),
       })
@@ -417,6 +475,20 @@ Page({
     } finally {
       wx.hideLoading()
     }
+  },
+  async loadCandidateTags() {
+    try {
+      const result = await manageCandidateTags({ action: "listTags" })
+      const tagState = buildTagState(result.tags || fallbackTagConfigs, this.data.form.gender, this.data.selectedTags)
+      this.setData(tagState)
+    } catch (error) {
+      const tagState = buildTagState(fallbackTagConfigs, this.data.form.gender, this.data.selectedTags)
+      this.setData(tagState)
+      console.error("标签配置加载失败，已使用本地兜底", error)
+    }
+  },
+  refreshTagVisibility(gender, selectedTags) {
+    this.setData(buildTagState(this.data.allTags, gender, selectedTags || this.data.selectedTags))
   },
   handleChooseImage() {
     const remain = 3 - this.data.photoItems.length
@@ -552,13 +624,17 @@ Page({
         throw new Error(result.error || "parse failed")
       }
 
-      this.setData({ form: this.buildCloudParsedForm(result.profile) })
+      const form = this.buildCloudParsedForm(result.profile)
+      this.setData({ form })
+      this.refreshTagVisibility(form.gender)
       wx.showToast({
         title: result.provider === "rule_only" || result.provider === "rule_fallback" ? "规则解析完成" : "AI解析完成",
         icon: "none",
       })
     } catch (error) {
-      this.setData({ form: this.buildLocalParsedForm(text) })
+      const form = this.buildLocalParsedForm(text)
+      this.setData({ form })
+      this.refreshTagVisibility(form.gender)
       wx.showToast({ title: "已用本地规则解析", icon: "none" })
       console.error(error)
     } finally {
@@ -617,6 +693,10 @@ Page({
       [`form.${field}`]: value,
       [`form.${field}Display`]: value || "选择",
     })
+
+    if (field === "gender") {
+      this.refreshTagVisibility(value)
+    }
   },
   getPickerSource(source) {
     if (source === "gender") return genderList
@@ -633,10 +713,7 @@ Page({
 
     this.setData({
       selectedTags,
-      tagItems: this.data.tags.map((item) => ({
-        name: item,
-        className: selectedTags.includes(item) ? "tag-pill selected" : "tag-pill",
-      })),
+      tagItems: buildTagState(this.data.allTags, this.data.form.gender, selectedTags).tagItems,
     })
   },
   handleReject() {

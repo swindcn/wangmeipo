@@ -37,6 +37,13 @@ Page({
         badge: "",
       },
       {
+        key: "tags",
+        iconUrl: "../../assets/icons/manage-admin.png",
+        iconClass: "menu-icon purple",
+        label: "标签管理",
+        badge: "",
+      },
+      {
         key: "recycle",
         iconUrl: "../../assets/icons/manage-recycle.png",
         iconClass: "menu-icon orange",
@@ -120,6 +127,10 @@ Page({
     if (key === "admins") {
       wx.navigateTo({ url: "/pages/admin-settings/index" })
       return
+    }
+
+    if (key === "tags") {
+      wx.navigateTo({ url: "/pages/tag-settings/index" })
     }
   },
   handleTabTap(event) {

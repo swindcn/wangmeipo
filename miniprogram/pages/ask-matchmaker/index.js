@@ -3,7 +3,6 @@ const {
   loadAskMatchmakerChat,
   saveAskMatchmakerChat,
   searchHomeCandidates,
-  upsertCurrentUser,
 } = require("../../utils/api")
 
 const tabItems = [
@@ -65,24 +64,12 @@ Page({
     pendingQuestion: "",
     loading: false,
     inputFocused: false,
-    authModalVisible: false,
-    registering: false,
-    registerProfile: {
-      nickname: "",
-      avatarUrl: "",
-      avatarPreview: "",
-      phone: "",
-      initial: "问",
-    },
     messages: buildDefaultMessages(),
     candidates: [],
   },
   onLoad() {
     this.restoreChatState()
     this.loadRemoteChatState()
-  },
-  onShow() {
-    this.syncRegisterProfile()
   },
   restoreChatState() {
     try {
@@ -146,25 +133,10 @@ Page({
       console.error(error)
     })
   },
-  syncRegisterProfile() {
-    const app = getApp()
-    const profile = app.globalData.currentUserProfile || {}
-    const nickname = cleanRegisterNickname(profile.nickname)
-
-    this.setData({
-      registerProfile: {
-        nickname,
-        avatarUrl: profile.avatarUrl || "",
-        avatarPreview: profile.avatarUrl || "",
-        phone: profile.phone || "",
-        initial: String(nickname || "问").slice(0, 1),
-      },
-    })
-  },
   hasCompletedRegister() {
     const app = getApp()
     const profile = app.globalData.currentUserProfile || {}
-    return Boolean(cleanRegisterNickname(profile.nickname) && profile.avatarUrl)
+    return Boolean((profile.registered || profile.phone) && cleanRegisterNickname(profile.nickname))
   },
   handleQuestionInput(event) {
     this.setData({ question: event.detail.value })
@@ -188,11 +160,7 @@ Page({
     }
 
     if (!this.hasCompletedRegister()) {
-      this.syncRegisterProfile()
-      this.setData({
-        pendingQuestion: question,
-        authModalVisible: true,
-      })
+      wx.navigateTo({ url: "/pages/login/index" })
       return
     }
 
@@ -248,119 +216,6 @@ Page({
     } finally {
       this.setData({ loading: false })
     }
-  },
-  closeAuthModal() {
-    if (this.data.registering) return
-    this.setData({ authModalVisible: false })
-  },
-  stopAuthModalTap() {},
-  getImageExtension(filePath) {
-    const matched = String(filePath || "").match(/\.([a-zA-Z0-9]+)(?:\?|$)/)
-    return matched ? matched[1].toLowerCase() : "jpg"
-  },
-  async handleRegisterAvatar(event) {
-    const avatarPreview = event.detail.avatarUrl || ""
-    if (!avatarPreview) return
-
-    this.setData({
-      "registerProfile.avatarPreview": avatarPreview,
-    })
-
-    try {
-      const extension = this.getImageExtension(avatarPreview)
-      const result = await wx.cloud.uploadFile({
-        cloudPath: `user-avatars/${Date.now()}.${extension}`,
-        filePath: avatarPreview,
-      })
-      this.setData({
-        "registerProfile.avatarUrl": result.fileID || avatarPreview,
-      })
-    } catch (error) {
-      this.setData({
-        "registerProfile.avatarUrl": avatarPreview,
-      })
-      console.error(error)
-    }
-  },
-  handleRegisterNickname(event) {
-    const nickname = cleanRegisterNickname(event.detail.value)
-    this.setData({
-      "registerProfile.nickname": nickname,
-      "registerProfile.initial": String(nickname || "问").slice(0, 1),
-    })
-  },
-  handleRegisterPhoneInput(event) {
-    this.setData({
-      "registerProfile.phone": String(event.detail.value || "").trim(),
-    })
-  },
-  async saveRegisterProfile(options = {}) {
-    const profile = this.data.registerProfile
-
-    if (!profile.avatarUrl) {
-      wx.showToast({ title: "请先选择头像", icon: "none" })
-      return
-    }
-
-    if (!profile.nickname) {
-      wx.showToast({ title: "请先填写昵称", icon: "none" })
-      return
-    }
-
-    this.setData({ registering: true })
-    wx.showLoading({ title: "注册中" })
-
-    try {
-      const result = await upsertCurrentUser({
-        profile,
-        phoneCode: options.phoneCode || "",
-      })
-
-      if (!result.ok) {
-        throw new Error(result.error || "register failed")
-      }
-
-      this.applyRegisteredUser(result.user)
-      const pendingQuestion = this.data.pendingQuestion
-      this.setData({
-        authModalVisible: false,
-        pendingQuestion: "",
-      })
-      if (pendingQuestion) {
-        await this.runAsk(pendingQuestion)
-      }
-    } catch (error) {
-      wx.showToast({ title: "注册失败", icon: "none" })
-      console.error(error)
-    } finally {
-      wx.hideLoading()
-      this.setData({ registering: false })
-    }
-  },
-  handleRegisterPhone(event) {
-    if (!event.detail || !event.detail.code) {
-      wx.showToast({ title: "未授权手机号", icon: "none" })
-      return
-    }
-
-    this.saveRegisterProfile({ phoneCode: event.detail.code })
-  },
-  handleRegisterWithoutPhone() {
-    this.saveRegisterProfile()
-  },
-  applyRegisteredUser(user) {
-    const app = getApp()
-    const nickname = cleanRegisterNickname(user && user.nickname ? user.nickname : "")
-
-    app.globalData.userRole = user && user.role ? user.role : app.globalData.userRole
-    app.globalData.currentViewerId = user && user._id ? user._id : app.globalData.currentViewerId
-    app.globalData.currentUserProfile = {
-      nickname,
-      avatarUrl: user && user.avatarUrl ? user.avatarUrl : "",
-      phone: user && user.phone ? user.phone : "",
-    }
-
-    this.syncRegisterProfile()
   },
   handleOpenCandidate(event) {
     const { id } = event.currentTarget.dataset

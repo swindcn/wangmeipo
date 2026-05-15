@@ -7,6 +7,7 @@
     "pages/candidate-detail/index",
     "pages/public-candidate-detail/index",
     "pages/view-requests/index",
+    "pages/tag-settings/index",
     "pages/admin-settings/index",
     "pages/admin-user-picker/index",
     "pages/admin-scope-edit/index",

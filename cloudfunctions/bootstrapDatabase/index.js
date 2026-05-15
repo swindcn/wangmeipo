@@ -11,12 +11,25 @@ const REQUIRED_COLLECTIONS = [
   "parse_tasks",
   "candidate_permissions",
   "candidate_manager_scopes",
+  "candidate_tags",
   "view_requests",
   "ask_matchmaker_chats",
   "share_tokens",
   "match_records",
   "match_logs",
   "audit_logs",
+]
+
+const DEFAULT_TAGS = [
+  { _id: "tag-female-beauty", name: "美女", scope: "female", sortOrder: 1 },
+  { _id: "tag-male-bride-price", name: "聘礼高", scope: "male", sortOrder: 2 },
+  { _id: "tag-male-handsome", name: "帅哥", scope: "male", sortOrder: 3 },
+  { _id: "tag-common-match-fee", name: "谢媒费高", scope: "common", sortOrder: 4 },
+  { _id: "tag-common-divorced", name: "离异", scope: "common", sortOrder: 5 },
+  { _id: "tag-common-family", name: "家境好", scope: "common", sortOrder: 6 },
+  { _id: "tag-common-civil-servant", name: "公务员", scope: "common", sortOrder: 7 },
+  { _id: "tag-common-public-institution", name: "事业单位", scope: "common", sortOrder: 8 },
+  { _id: "tag-common-demanding", name: "要求多", scope: "common", sortOrder: 9 },
 ]
 
 function buildNow() {
@@ -217,6 +230,15 @@ exports.main = async () => {
     createdAt: now,
     updatedAt: now,
   })
+
+  for (const tag of DEFAULT_TAGS) {
+    await upsertDocument("candidate_tags", tag._id, {
+      ...tag,
+      status: "active",
+      createdAt: now,
+      updatedAt: now,
+    })
+  }
 
   for (const candidate of getSeedCandidates(now)) {
     await upsertDocument("candidates", candidate._id, candidate)

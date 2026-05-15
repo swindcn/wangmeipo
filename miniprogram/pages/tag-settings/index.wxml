@@ -1,0 +1,47 @@
+<view class="tag-page">
+  <view class="filter-bar">
+    <block wx:for="{{scopeTabs}}" wx:key="key">
+      <view class="{{item.className}}" data-scope="{{item.key}}" bindtap="handleScopeTap">{{item.label}}</view>
+    </block>
+  </view>
+
+  <view wx:if="{{loading}}" class="empty-text">加载中...</view>
+  <view wx:elif="{{!visibleTags.length}}" class="empty-text">暂无标签</view>
+
+  <view wx:else class="tag-list">
+    <block wx:for="{{visibleTags}}" wx:key="_id">
+      <view class="tag-row">
+        <view class="tag-main">
+          <view class="tag-name">{{item.name}}</view>
+          <view class="tag-scope">{{item.scopeText}}</view>
+        </view>
+        <view class="tag-action edit" data-id="{{item._id}}" bindtap="handleEditTag">修改</view>
+        <view class="tag-action delete" data-id="{{item._id}}" bindtap="handleDeleteTag">删除</view>
+      </view>
+    </block>
+  </view>
+
+  <button class="add-button" bindtap="handleAddTag">添加标签</button>
+
+  <view wx:if="{{modalVisible}}" class="modal-mask" bindtap="closeModal">
+    <view class="modal-sheet" catchtap="stopModalTap">
+      <view class="modal-title">{{modalMode === 'edit' ? '修改标签' : '添加标签'}}</view>
+      <view class="modal-field">
+        <view class="modal-label">标签类型</view>
+        <view class="scope-choice-row">
+          <block wx:for="{{scopeOptions}}" wx:key="key">
+            <view class="{{draftScope === item.key ? 'scope-choice active' : 'scope-choice'}}" data-scope="{{item.key}}" bindtap="handleDraftScopeTap">{{item.label}}</view>
+          </block>
+        </view>
+      </view>
+      <view class="modal-field">
+        <view class="modal-label">标签内容</view>
+        <input class="modal-input" value="{{draftName}}" maxlength="12" placeholder="请输入标签内容" bindinput="handleDraftNameInput" />
+      </view>
+      <view class="modal-actions">
+        <button class="modal-button cancel" bindtap="closeModal">关闭</button>
+        <button class="modal-button save" loading="{{saving}}" disabled="{{saving}}" bindtap="handleSaveTag">保存</button>
+      </view>
+    </view>
+  </view>
+</view>

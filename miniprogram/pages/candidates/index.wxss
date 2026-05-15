@@ -60,6 +60,10 @@ page {
   display: block;
 }
 
+.menu-icon.purple {
+  filter: hue-rotate(210deg) saturate(1.2);
+}
+
 .menu-label {
   flex: 1;
   color: #666666;

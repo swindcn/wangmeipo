@@ -260,6 +260,11 @@ async function manageAdminSettings(payload) {
   return result
 }
 
+async function manageCandidateTags(payload) {
+  const response = await callCloudFunction("manageCandidateTags", payload)
+  return unwrapResult(response)
+}
+
 async function manageViewRequests(payload) {
   const response = await callCloudFunction("manageViewRequests", payload)
   const result = unwrapResult(response)
@@ -292,6 +297,7 @@ module.exports = {
   listReviewQueue,
   manageViewRequests,
   manageAdminSettings,
+  manageCandidateTags,
   manageAccount,
   normalizeCloudFileUrl,
   reviewCandidate,

@@ -29,6 +29,10 @@
     "read": "false",
     "write": "false"
   },
+  "candidate_tags": {
+    "read": "false",
+    "write": "false"
+  },
   "share_tokens": {
     "read": "false",
     "write": "false"

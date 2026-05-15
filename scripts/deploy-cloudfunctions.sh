@@ -20,6 +20,7 @@ FUNCTIONS=(
   "createShareToken"
   "manageAccount"
   "manageAdminSettings"
+  "manageCandidateTags"
   "upsertCurrentUser"
   "askMatchmaker"
   "submitCandidateProfile"

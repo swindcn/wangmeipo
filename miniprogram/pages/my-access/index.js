@@ -76,7 +76,6 @@ function buildCachedProfile(profile = {}) {
 Page({
   data: {
     loading: false,
-    registering: false,
     profileReady: false,
     navTopGap: 88,
     tabItems,
@@ -86,13 +85,6 @@ Page({
       avatarUrl: "",
       roleText: "普通用户",
       phoneText: "未授权",
-    },
-    registerProfile: {
-      nickname: "",
-      avatarUrl: "",
-      avatarPreview: "",
-      phone: "",
-      initial: "我",
     },
     sections: [
       buildEmptySection("submitted", "传的资料", "", "pink"),

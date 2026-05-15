@@ -1,0 +1,215 @@
+page {
+  background: #ffffff;
+}
+
+button {
+  padding: 0;
+  border: none;
+}
+
+button::after {
+  border: none;
+}
+
+.tag-page {
+  min-height: 100vh;
+  padding-bottom: 150rpx;
+  background: #ffffff;
+}
+
+.filter-bar {
+  height: 96rpx;
+  display: flex;
+  align-items: center;
+  gap: 18rpx;
+  padding: 0 28rpx;
+  border-bottom: 1rpx solid #eeeeee;
+  box-sizing: border-box;
+}
+
+.filter-tab {
+  min-width: 96rpx;
+  height: 54rpx;
+  padding: 0 22rpx;
+  border-radius: 999rpx;
+  background: #f4eee7;
+  color: #7f6f62;
+  font-size: 24rpx;
+  font-weight: 800;
+  line-height: 54rpx;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.filter-tab.active {
+  background: #d95d70;
+  color: #ffffff;
+}
+
+.tag-row {
+  min-height: 116rpx;
+  display: flex;
+  align-items: center;
+  padding: 18rpx 28rpx;
+  border-bottom: 1rpx solid #eeeeee;
+  box-sizing: border-box;
+}
+
+.tag-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.tag-name {
+  color: #222222;
+  font-size: 31rpx;
+  font-weight: 800;
+  line-height: 42rpx;
+}
+
+.tag-scope {
+  margin-top: 6rpx;
+  color: #999999;
+  font-size: 23rpx;
+  line-height: 30rpx;
+}
+
+.tag-action {
+  width: 88rpx;
+  height: 52rpx;
+  margin-left: 14rpx;
+  border-radius: 14rpx;
+  font-size: 24rpx;
+  font-weight: 800;
+  line-height: 52rpx;
+  text-align: center;
+}
+
+.tag-action.edit {
+  background: #f3e4d6;
+  color: #9a6b48;
+}
+
+.tag-action.delete {
+  background: #fde8eb;
+  color: #d95d70;
+}
+
+.empty-text {
+  padding: 120rpx 0;
+  color: #999999;
+  font-size: 28rpx;
+  text-align: center;
+}
+
+.add-button {
+  position: fixed;
+  left: 40rpx;
+  right: 40rpx;
+  bottom: 36rpx;
+  height: 84rpx;
+  border-radius: 22rpx;
+  background: #d95d70;
+  color: #ffffff;
+  font-size: 30rpx;
+  font-weight: 900;
+  line-height: 84rpx;
+  box-shadow: 0 14rpx 30rpx rgba(217, 93, 112, 0.24);
+}
+
+.modal-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.42);
+}
+
+.modal-sheet {
+  width: 100%;
+  padding: 34rpx 34rpx 46rpx;
+  border-radius: 34rpx 34rpx 0 0;
+  background: #fffaf4;
+  box-sizing: border-box;
+}
+
+.modal-title {
+  margin-bottom: 30rpx;
+  color: #2f241f;
+  font-size: 34rpx;
+  font-weight: 900;
+  line-height: 44rpx;
+  text-align: center;
+}
+
+.modal-field {
+  margin-bottom: 28rpx;
+}
+
+.modal-label {
+  margin-bottom: 16rpx;
+  color: #6f5a49;
+  font-size: 26rpx;
+  font-weight: 800;
+}
+
+.scope-choice-row {
+  display: flex;
+  gap: 18rpx;
+}
+
+.scope-choice {
+  flex: 1;
+  height: 70rpx;
+  border-radius: 18rpx;
+  background: #efe1d0;
+  color: #7f5330;
+  font-size: 27rpx;
+  font-weight: 800;
+  line-height: 70rpx;
+  text-align: center;
+}
+
+.scope-choice.active {
+  background: #b96f42;
+  color: #ffffff;
+}
+
+.modal-input {
+  height: 78rpx;
+  padding: 0 22rpx;
+  border-radius: 18rpx;
+  background: #ffffff;
+  color: #2f241f;
+  font-size: 28rpx;
+  line-height: 78rpx;
+  box-sizing: border-box;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 34rpx;
+  margin-top: 36rpx;
+}
+
+.modal-button {
+  width: 180rpx;
+  height: 70rpx;
+  border-radius: 18rpx;
+  font-size: 28rpx;
+  font-weight: 900;
+  line-height: 70rpx;
+}
+
+.modal-button.cancel {
+  background: #efe1d0;
+  color: #7f5330;
+}
+
+.modal-button.save {
+  background: #b96f42;
+  color: #ffffff;
+}
