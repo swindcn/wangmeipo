@@ -231,6 +231,11 @@ async function createShareToken(payload) {
   return unwrapResult(response)
 }
 
+async function generateShareCode(payload) {
+  const response = await callCloudFunction("generateShareCode", payload)
+  return unwrapResult(response)
+}
+
 async function submitCandidateProfile(payload) {
   const response = await callCloudFunction("submitCandidateProfile", payload)
   return unwrapResult(response)
@@ -283,6 +288,7 @@ module.exports = {
   askMatchmaker,
   bootstrapCloudDatabase,
   createShareToken,
+  generateShareCode,
   getCandidateDetail,
   getDashboardSummary,
   getMatchData,

@@ -11,6 +11,7 @@ FUNCTIONS=(
   "bootstrapDatabase"
   "getDashboardSummary"
   "getCandidateDetail"
+  "generateShareCode"
   "listReviewQueue"
   "getPermissionData"
   "grantCandidatePermission"

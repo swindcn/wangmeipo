@@ -1,5 +1,6 @@
 const {
   createShareToken,
+  generateShareCode,
   getCandidateDetail,
   manageViewRequests,
   reviewCandidate,
@@ -37,6 +38,7 @@ Page({
     shareCardImageUrl: "",
     shareCardReady: false,
     posterGenerating: false,
+    posterCodeImageUrl: "",
     currentPhotoIndex: 0,
     suppressNextShowRefresh: false,
     navBarTop: 0,
@@ -131,6 +133,7 @@ Page({
         currentPhotoIndex: 0,
         shareCardImageUrl: "",
         shareCardReady: false,
+        posterCodeImageUrl: "",
       })
       if (candidate) {
         this.prepareShareCardImage(candidate)
@@ -140,6 +143,7 @@ Page({
       }
       if (candidate && candidate.canUseKeyActions && source !== "trash") {
         this.prepareSharePaths(candidate._id)
+        this.preparePosterShareCode(candidate._id)
       }
     } catch (error) {
       wx.showToast({ title: "详情加载失败", icon: "none" })
@@ -282,6 +286,38 @@ Page({
       sharePath: "",
       shareModeText: "",
     })
+  },
+  async preparePosterShareCode(candidateId) {
+    if (!candidateId || this.data.posterCodeImageUrl) {
+      return
+    }
+
+    let sharePath = this.data.publicSharePath
+    if (!sharePath) {
+      const result = await this.createShare("public")
+      sharePath = result && result.sharePath ? result.sharePath : ""
+      this.setData({
+        shareToken: "",
+        sharePath: "",
+        shareModeText: "",
+      })
+    }
+
+    if (!sharePath) {
+      return
+    }
+
+    try {
+      const result = await generateShareCode({
+        candidateId,
+        pagePath: sharePath.replace(/^\//, ""),
+      })
+      if (result.ok && result.tempFileURL) {
+        this.setData({ posterCodeImageUrl: result.tempFileURL })
+      }
+    } catch (error) {
+      console.error("海报二维码生成失败", error)
+    }
   },
   preparePrivateSharePath(candidateId) {
     if (!candidateId || this.data.privateSharePath) {
@@ -465,6 +501,7 @@ Page({
 
     const posterText = this.getPosterText(candidate)
     const photoInfo = await this.getPosterImagePath(candidate)
+    const qrCodeUrl = this.data.posterCodeImageUrl || ""
 
     ctx.fillStyle = "#f6f0e7"
     ctx.fillRect(0, 0, width, height)
@@ -566,12 +603,37 @@ Page({
       ctx.fillText(line, 190, cardY + 262 + index * 34)
     })
 
-    ctx.fillStyle = "#8a7463"
-    ctx.font = "500 22px sans-serif"
-    ctx.fillText("长按识别小程序卡片或进入会员详情查看更多", 88, cardY + 416)
+    const footerTop = cardY + 388
+    if (qrCodeUrl) {
+      ctx.fillStyle = "#fff6ee"
+      this.drawRoundRect(ctx, 510, footerTop - 20, 140, 140, 24)
+      ctx.fill()
+      try {
+        const qrInfo = await wx.getImageInfo({ src: qrCodeUrl })
+        const qrImage = canvas.createImage()
+        await new Promise((resolve, reject) => {
+          qrImage.onload = resolve
+          qrImage.onerror = reject
+          qrImage.src = qrInfo.path
+        })
+        ctx.drawImage(qrImage, 524, footerTop - 6, 112, 112)
+      } catch (error) {
+        console.error("海报二维码绘制失败", error)
+      }
+
+      ctx.fillStyle = "#8a7463"
+      ctx.font = "500 22px sans-serif"
+      ctx.fillText("长按识别二维码", 88, footerTop + 18)
+      ctx.fillText("进入会员详情查看更多", 88, footerTop + 54)
+    } else {
+      ctx.fillStyle = "#8a7463"
+      ctx.font = "500 22px sans-serif"
+      ctx.fillText("从聊天里的小程序卡片进入会员详情查看更多", 88, footerTop + 18)
+    }
+
     ctx.fillStyle = "#b96f42"
     ctx.font = "900 24px sans-serif"
-    ctx.fillText("资料真实度以人工审核为准", 88, cardY + 452)
+    ctx.fillText("资料真实度以人工审核为准", 88, footerTop + 94)
 
     return new Promise((resolve, reject) => {
       wx.canvasToTempFilePath({
