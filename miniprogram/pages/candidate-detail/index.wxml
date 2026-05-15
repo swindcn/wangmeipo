@@ -154,52 +154,5 @@
     </button>
   </view>
 
-  <view wx:if="{{authModalVisible}}" class="auth-mask" bindtap="closeAuthModal">
-    <view class="auth-sheet" catchtap="stopAuthModalTap">
-      <view class="auth-title">先完成注册</view>
-      <view class="auth-desc">提交想看申请前需要绑定账号，便于管理员审批。</view>
-
-      <view class="auth-field-label">头像</view>
-      <view class="auth-avatar-row">
-        <button class="auth-avatar-button" open-type="chooseAvatar" bindchooseavatar="handleRegisterAvatar">
-          <image wx:if="{{registerProfile.avatarPreview}}" class="auth-avatar-image" src="{{registerProfile.avatarPreview}}" mode="aspectFill" />
-          <view wx:else class="auth-avatar-text">{{registerProfile.initial}}</view>
-        </button>
-        <view class="auth-avatar-tip">点击选择微信头像</view>
-      </view>
-
-      <view class="auth-field-label">昵称</view>
-      <view class="auth-form-row">
-        <input
-          class="auth-nickname-input"
-          type="nickname"
-          value="{{registerProfile.nickname}}"
-          bindinput="handleRegisterNickname"
-          placeholder="填写微信昵称"
-        />
-      </view>
-
-      <view class="auth-field-label">手机号</view>
-      <input
-        class="auth-phone-input"
-        type="number"
-        value="{{registerProfile.phone}}"
-        bindinput="handleRegisterPhoneInput"
-        placeholder="可手动填写手机号"
-      />
-      <button
-        class="auth-phone-button"
-        loading="{{registering}}"
-        disabled="{{registering}}"
-        open-type="getPhoneNumber"
-        bindgetphonenumber="handleRegisterPhone"
-      >
-        微信授权手机号并提交申请
-      </button>
-      <view class="auth-secondary" bindtap="handleRegisterWithoutPhone">不授权手机号，直接提交申请</view>
-      <view class="auth-cancel" bindtap="closeAuthModal">暂不申请</view>
-    </view>
-  </view>
-
   <canvas type="2d" id="posterCanvas" class="poster-canvas"></canvas>
 </view>
