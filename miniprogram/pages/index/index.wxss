@@ -169,6 +169,26 @@ button::after {
   white-space: nowrap;
 }
 
+.profile-watermark {
+  position: absolute;
+  left: -18%;
+  right: -18%;
+  top: 6%;
+  bottom: 16%;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  align-content: space-around;
+  gap: 36rpx 22rpx;
+  color: rgba(255, 255, 255, 0.16);
+  font-size: 28rpx;
+  font-weight: 900;
+  text-align: center;
+  transform: rotate(-24deg);
+  pointer-events: none;
+  text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.12);
+}
+
 .profile-overlay {
   position: absolute;
   left: 0;
@@ -182,6 +202,7 @@ button::after {
   box-sizing: border-box;
   color: #ffffff;
   background: linear-gradient(180deg, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.62));
+  z-index: 3;
 }
 
 .profile-basic {

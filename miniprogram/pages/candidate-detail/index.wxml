@@ -39,6 +39,11 @@
             <view class="hero-photo-wrap" bindtap="handlePreviewPhoto">
               <image wx:if="{{item.type === 'url'}}" class="hero-photo {{candidate.isPrivateLocked ? 'blurred' : ''}}" src="{{item.value}}" mode="aspectFill" />
               <view wx:else class="hero-placeholder {{candidate.isPrivateLocked ? 'blurred' : ''}}">照片 {{item.value}}</view>
+              <view class="hero-watermark">
+                <text>王美婆</text><text>王美婆</text><text>王美婆</text>
+                <text>王美婆</text><text>王美婆</text><text>王美婆</text>
+                <text>王美婆</text><text>王美婆</text><text>王美婆</text>
+              </view>
               <view wx:if="{{candidate.isPrivateLocked}}" class="photo-lock">私密分享 · 照片未开放</view>
             </view>
           </swiper-item>
@@ -102,6 +107,10 @@
       <view class="section-title">敏感信息</view>
       <view class="summary-line">常住地址：{{candidate.currentAddress || '暂无'}}</view>
       <view class="summary-line">联系电话：{{candidate.canViewPhone ? (candidate.phone || '-') : '当前权限不可见'}}</view>
+      <view class="summary-block two-line-summary">
+        <text class="summary-block-label">房产情况：</text>
+        <text class="summary-block-content">{{candidate.assetsText || '暂无'}}</text>
+      </view>
       <view class="summary-line">订阅到期：{{candidate.subscriptionExpiresText || '未订阅'}}</view>
       <view class="muted">照片权限：{{candidate.canViewPhotos ? '可见' : '私密模式未开放'}}</view>
     </view>
@@ -152,6 +161,32 @@
       <text class="bar-icon">♥</text>
       <text>{{candidate.viewRequestButtonText}}</text>
     </button>
+  </view>
+
+  <view wx:if="{{previewVisible}}" class="photo-preview-mask" bindtap="closePreview">
+    <swiper
+      class="photo-preview-swiper"
+      current="{{previewPhotoIndex}}"
+      circular="{{previewPhotos.length > 1}}"
+      bindchange="handlePreviewChange"
+      catchtap="stopPreviewTap"
+    >
+      <block wx:for="{{previewPhotos}}" wx:key="*this">
+        <swiper-item>
+          <view class="photo-preview-item" bindtap="closePreview">
+            <image class="photo-preview-image" src="{{item}}" mode="aspectFit" />
+            <view class="preview-watermark">
+              <text>王美婆</text><text>王美婆</text><text>王美婆</text>
+              <text>王美婆</text><text>王美婆</text><text>王美婆</text>
+              <text>王美婆</text><text>王美婆</text><text>王美婆</text>
+              <text>王美婆</text><text>王美婆</text><text>王美婆</text>
+            </view>
+          </view>
+        </swiper-item>
+      </block>
+    </swiper>
+    <view class="photo-preview-close" bindtap="closePreview">×</view>
+    <view wx:if="{{previewPhotos.length > 1}}" class="photo-preview-count">{{previewPhotoIndex + 1}} / {{previewPhotos.length}}</view>
   </view>
 
   <canvas type="2d" id="posterCanvas" class="poster-canvas"></canvas>

@@ -2,6 +2,12 @@ const {
   bootstrapCloudDatabase,
   listHomeCandidates,
 } = require("../../utils/api")
+const {
+  disableCaptureProtection,
+  enableCaptureProtection,
+  listenCaptureEvents,
+  unlistenCaptureEvents,
+} = require("../../utils/privacyGuard")
 
 const fallbackProfiles = [
   {
@@ -191,8 +197,10 @@ Page({
   },
   onLoad() {
     this.initHeaderMetrics()
+    listenCaptureEvents(this)
   },
   onShow() {
+    enableCaptureProtection()
     this.applyPendingDeletedCandidates()
     const app = getApp()
     if (app.globalData.homeProfilesDirty) {
@@ -204,6 +212,13 @@ Page({
     if (!this.data.hasLoadedProfiles) {
       this.loadProfiles()
     }
+  },
+  onHide() {
+    disableCaptureProtection()
+  },
+  onUnload() {
+    disableCaptureProtection()
+    unlistenCaptureEvents(this)
   },
   applyPendingDeletedCandidates() {
     const app = getApp()

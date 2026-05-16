@@ -44,6 +44,10 @@
         <block wx:for="{{leftProfiles}}" wx:key="_id">
           <view class="profile-card" data-id="{{item._id}}" bindtap="handleOpenProfile">
             <image class="profile-image {{item.isPrivateLocked ? 'profile-image-blurred' : ''}}" src="{{item.imageUrl}}" mode="aspectFill" lazy-load="true" webp="true" />
+            <view class="profile-watermark">
+              <text>王美婆</text><text>王美婆</text><text>王美婆</text>
+              <text>王美婆</text><text>王美婆</text><text>王美婆</text>
+            </view>
             <view wx:if="{{item.isPrivateLocked}}" class="profile-photo-lock">照片未开放</view>
             <view class="profile-overlay">
               <view class="profile-basic">
@@ -62,6 +66,10 @@
         <block wx:for="{{rightProfiles}}" wx:key="_id">
           <view class="profile-card" data-id="{{item._id}}" bindtap="handleOpenProfile">
             <image class="profile-image {{item.isPrivateLocked ? 'profile-image-blurred' : ''}}" src="{{item.imageUrl}}" mode="aspectFill" lazy-load="true" webp="true" />
+            <view class="profile-watermark">
+              <text>王美婆</text><text>王美婆</text><text>王美婆</text>
+              <text>王美婆</text><text>王美婆</text><text>王美婆</text>
+            </view>
             <view wx:if="{{item.isPrivateLocked}}" class="profile-photo-lock">照片未开放</view>
             <view class="profile-overlay">
               <view class="profile-basic">

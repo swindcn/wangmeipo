@@ -6,6 +6,12 @@ const {
   reviewCandidate,
   setCandidateSubscription,
 } = require("../../utils/api")
+const {
+  disableCaptureProtection,
+  enableCaptureProtection,
+  listenCaptureEvents,
+  unlistenCaptureEvents,
+} = require("../../utils/privacyGuard")
 
 const SYSTEM_NICKNAMES = ["云开发管理员"]
 
@@ -24,6 +30,25 @@ function getCandidateReadablePhotoSources(candidate = {}) {
   return Array.isArray(candidate.photoUrls) ? candidate.photoUrls.filter(Boolean) : []
 }
 
+function formatAssetsText(assets) {
+  if (!assets) {
+    return ""
+  }
+
+  if (typeof assets === "string") {
+    return assets.trim()
+  }
+
+  if (typeof assets === "object") {
+    return [assets.house, assets.car, assets.other]
+      .map((item) => String(item || "").trim())
+      .filter(Boolean)
+      .join("，")
+  }
+
+  return ""
+}
+
 Page({
   data: {
     candidate: null,
@@ -36,10 +61,14 @@ Page({
     pendingShareMode: "",
     activeShareToken: "",
     shareCardImageUrl: "",
+    privateShareCardImageUrl: "",
     shareCardReady: false,
     posterGenerating: false,
     posterCodeImageUrl: "",
     currentPhotoIndex: 0,
+    previewVisible: false,
+    previewPhotoIndex: 0,
+    previewPhotos: [],
     suppressNextShowRefresh: false,
     navBarTop: 0,
     navBarHeight: 32,
@@ -59,6 +88,7 @@ Page({
       todayDate: this.formatDateInput(new Date()),
     })
     wx.setNavigationBarTitle({ title: "会员详情" })
+    listenCaptureEvents(this)
     this.loadDetail(query.id || getApp().globalData.currentCandidateId, shareToken, query.source || "")
   },
   initNavigationMetrics() {
@@ -81,6 +111,7 @@ Page({
     })
   },
   onShow() {
+    enableCaptureProtection()
     if (this.data.suppressNextShowRefresh) {
       this.setData({ suppressNextShowRefresh: false })
       return
@@ -89,6 +120,13 @@ Page({
     if (this.data.candidate && this.data.candidate._id) {
       this.loadDetail(this.data.candidate._id, this.data.activeShareToken, this.data.source)
     }
+  },
+  onHide() {
+    disableCaptureProtection()
+  },
+  onUnload() {
+    disableCaptureProtection()
+    unlistenCaptureEvents(this)
   },
   async loadDetail(id, shareToken, source) {
     if (!id) {
@@ -113,6 +151,7 @@ Page({
         candidate.isTrashMode = source === "trash" || candidate.fromTrash
         candidate.isSubscribed = this.isSubscriptionActive(candidate.subscriptionExpiresAt)
         candidate.subscriptionExpiresText = this.formatDisplayDate(candidate.subscriptionExpiresAt)
+        candidate.assetsText = formatAssetsText(candidate.assets)
         const displayPhotoSources = getCandidatePhotoSources(candidate)
         if (displayPhotoSources.length > 0) {
           candidate.displayPhotos = displayPhotoSources.map((item) => ({
@@ -131,7 +170,11 @@ Page({
       this.setData({
         candidate: candidate || null,
         currentPhotoIndex: 0,
+        previewVisible: false,
+        previewPhotoIndex: 0,
+        previewPhotos: [],
         shareCardImageUrl: "",
+        privateShareCardImageUrl: "",
         shareCardReady: false,
         posterCodeImageUrl: "",
       })
@@ -358,12 +401,19 @@ Page({
       return
     }
 
-    this.setData({ suppressNextShowRefresh: true })
-    wx.previewImage({
-      current: photos[this.data.currentPhotoIndex] || photos[0],
-      urls: photos,
+    this.setData({
+      previewVisible: true,
+      previewPhotoIndex: this.data.currentPhotoIndex || 0,
+      previewPhotos: photos,
     })
   },
+  handlePreviewChange(event) {
+    this.setData({ previewPhotoIndex: event.detail.current || 0 })
+  },
+  closePreview() {
+    this.setData({ previewVisible: false })
+  },
+  stopPreviewTap() {},
   handleGoMatch() {
     wx.navigateTo({ url: "/pages/match-records/index" })
   },
@@ -649,7 +699,7 @@ Page({
       })
     })
   },
-  async drawShareCardToTempFile(candidate) {
+  async drawShareCardToTempFile(candidate, options = {}) {
     const query = wx.createSelectorQuery()
     const canvasInfo = await new Promise((resolve, reject) => {
       query.select("#posterCanvas")
@@ -695,6 +745,26 @@ Page({
         image.src = photoInfo.path
       })
       this.drawCoverImage(ctx, image, photoInfo, photoX, photoY, photoSize, photoSize)
+      if (options.blurred) {
+        ctx.fillStyle = "rgba(246, 240, 231, 0.74)"
+        ctx.fillRect(photoX, photoY, photoSize, photoSize)
+        ctx.fillStyle = "rgba(47, 36, 31, 0.16)"
+        const blockSize = 26
+        for (let y = photoY; y < photoY + photoSize; y += blockSize) {
+          for (let x = photoX; x < photoX + photoSize; x += blockSize) {
+            if ((x + y) % (blockSize * 2) === 0) {
+              ctx.fillRect(x, y, blockSize, blockSize)
+            }
+          }
+        }
+        ctx.fillStyle = "rgba(0, 0, 0, 0.45)"
+        this.drawRoundRect(ctx, photoX + 62, photoY + 122, photoSize - 124, 48, 24)
+        ctx.fill()
+        ctx.fillStyle = "#ffffff"
+        ctx.font = "700 20px sans-serif"
+        ctx.textAlign = "center"
+        ctx.fillText("私密分享 · 照片未开放", photoX + photoSize / 2, photoY + 153)
+      }
     } else {
       this.drawPosterPlaceholder(ctx, photoX, photoY, photoSize, photoSize, false)
     }
@@ -721,10 +791,14 @@ Page({
   },
   async prepareShareCardImage(candidate) {
     try {
-      const imageUrl = await this.drawShareCardToTempFile(candidate)
+      const [imageUrl, privateImageUrl] = await Promise.all([
+        this.drawShareCardToTempFile(candidate),
+        this.drawShareCardToTempFile(candidate, { blurred: true }),
+      ])
       if (this.data.candidate && candidate && this.data.candidate._id === candidate._id) {
         this.setData({
           shareCardImageUrl: imageUrl || "",
+          privateShareCardImageUrl: privateImageUrl || "",
           shareCardReady: true,
         })
       }
@@ -921,7 +995,9 @@ Page({
     return {
       title: "优质会员资料",
       path: sharePath || `/pages/candidate-detail/index?id=${candidate._id || ""}`,
-      imageUrl: this.data.shareCardImageUrl || getCandidateReadablePhotoSources(candidate)[0] || "",
+      imageUrl: mode === "private"
+        ? (this.data.privateShareCardImageUrl || this.data.shareCardImageUrl || "")
+        : (this.data.shareCardImageUrl || getCandidateReadablePhotoSources(candidate)[0] || ""),
     }
   },
 })
