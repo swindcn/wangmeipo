@@ -1,6 +1,6 @@
 <view class="manage-page">
   <view class="manage-nav" style="height: {{navTopGap}}rpx;">
-    <view class="manage-nav-title">懂管理</view>
+    <view class="manage-nav-title">管理</view>
   </view>
 
   <view class="manage-content" style="padding-top: {{navTopGap}}rpx;">

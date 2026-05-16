@@ -93,10 +93,10 @@ const fallbackProfiles = [
 ]
 
 const tabItems = [
-  { key: "home", label: "汇匹配", iconUrl: "../../assets/icons/tab-home.png", activeIconUrl: "../../assets/icons/tab-home-active.png", currentIconUrl: "../../assets/icons/tab-home-active.png", className: "tab-item active" },
-  { key: "assistant", label: "问美媒", iconUrl: "../../assets/icons/tab-assistant.png", activeIconUrl: "../../assets/icons/tab-assistant-active.png", currentIconUrl: "../../assets/icons/tab-assistant.png", className: "tab-item" },
+  { key: "home", label: "资料", iconUrl: "../../assets/icons/tab-home.png", activeIconUrl: "../../assets/icons/tab-home-active.png", currentIconUrl: "../../assets/icons/tab-home-active.png", className: "tab-item active" },
+  { key: "assistant", label: "搜索", iconUrl: "../../assets/icons/tab-assistant.png", activeIconUrl: "../../assets/icons/tab-assistant-active.png", currentIconUrl: "../../assets/icons/tab-assistant.png", className: "tab-item" },
   { key: "upload", label: "传资料", iconUrl: "../../assets/icons/tab-upload.png", activeIconUrl: "../../assets/icons/tab-upload.png", currentIconUrl: "../../assets/icons/tab-upload.png", className: "tab-item tab-upload" },
-  { key: "manage", label: "懂管理", iconUrl: "../../assets/icons/tab-manage.png", activeIconUrl: "../../assets/icons/tab-manage-active.png", currentIconUrl: "../../assets/icons/tab-manage.png", className: "tab-item" },
+  { key: "manage", label: "管理", iconUrl: "../../assets/icons/tab-manage.png", activeIconUrl: "../../assets/icons/tab-manage-active.png", currentIconUrl: "../../assets/icons/tab-manage.png", className: "tab-item" },
   { key: "mine", label: "我的", iconUrl: "../../assets/icons/tab-mine.png", activeIconUrl: "../../assets/icons/tab-mine-active.png", currentIconUrl: "../../assets/icons/tab-mine.png", className: "tab-item" },
 ]
 
@@ -168,6 +168,7 @@ function normalizeProfile(candidate, index) {
     tags: tags.length > 0 ? tags.slice(0, 2) : ["待完善"],
     canViewPhotos: Boolean(candidate.canViewPhotos),
     isPrivateLocked: !candidate.canViewPhotos,
+    showWatermark: !candidate.canViewPhotos,
     imageUrl: candidate.thumbnailUrls && candidate.thumbnailUrls[0]
       ? candidate.thumbnailUrls[0]
       : (candidate.photoUrls && candidate.photoUrls[0] ? candidate.photoUrls[0] : fallbackProfiles[index % fallbackProfiles.length].imageUrl),

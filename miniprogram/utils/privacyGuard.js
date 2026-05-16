@@ -10,12 +10,33 @@ function callSafely(fn, payload) {
   }
 }
 
-function enableCaptureProtection() {
+function isSuperAdminViewer() {
+  try {
+    const app = getApp()
+    const profile = app && app.globalData ? app.globalData.currentUserProfile || {} : {}
+    const role = profile.role || (app && app.globalData ? app.globalData.userRole : "")
+    return role === "super_admin"
+  } catch (error) {
+    return false
+  }
+}
+
+function enableCaptureProtection(options = {}) {
+  if (!options.force && isSuperAdminViewer()) {
+    disableCaptureProtection()
+    return false
+  }
+
   callSafely(wx.setVisualEffectOnCapture, { visualEffect: "hidden" })
+  return true
 }
 
 function disableCaptureProtection() {
   callSafely(wx.setVisualEffectOnCapture, { visualEffect: "none" })
+}
+
+function applyCaptureProtection() {
+  return enableCaptureProtection()
 }
 
 function listenCaptureEvents(page) {
@@ -24,10 +45,18 @@ function listenCaptureEvents(page) {
   }
 
   page._handleUserCaptureScreen = () => {
+    if (isSuperAdminViewer()) {
+      return
+    }
+
     wx.showToast({ title: "资料页已开启防截屏保护", icon: "none" })
   }
 
   page._handleScreenRecordingStateChanged = (result = {}) => {
+    if (isSuperAdminViewer()) {
+      return
+    }
+
     if (result.state === "on") {
       wx.showToast({ title: "录屏时将隐藏敏感内容", icon: "none" })
     }
@@ -49,8 +78,10 @@ function unlistenCaptureEvents(page) {
 }
 
 module.exports = {
+  applyCaptureProtection,
   disableCaptureProtection,
   enableCaptureProtection,
+  isSuperAdminViewer,
   listenCaptureEvents,
   unlistenCaptureEvents,
 }

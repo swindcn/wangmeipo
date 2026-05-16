@@ -145,6 +145,7 @@ Page({
         candidate.canViewPhone = Boolean(candidate.canViewPhone)
         candidate.canUseKeyActions = Boolean(candidate.canUseKeyActions)
         candidate.isPrivateLocked = !candidate.canViewPhotos
+        candidate.showWatermark = !candidate.canViewPhotos
         candidate.hasKeyDataAccess = Boolean(candidate.canViewPhotos && candidate.canViewName && candidate.canViewPhone)
         candidate.viewRequestButtonText = candidate.myViewRequestStatus === "pending" ? "待审核" : "想看"
         candidate.viewRequestPending = candidate.myViewRequestStatus === "pending"
@@ -434,7 +435,7 @@ Page({
       basics: basics.join(" · ") || "资料待完善",
       tags,
       personality: candidate.personality || "性格资料待完善",
-      requirements: requirements || "择偶要求待完善",
+      requirements: requirements || "备注要求待完善",
     }
   },
   wrapPosterText(ctx, text, maxWidth, maxLines) {
@@ -573,7 +574,7 @@ Page({
     ctx.fillStyle = "#ffffff"
     ctx.font = "900 34px sans-serif"
     ctx.textAlign = "left"
-    ctx.fillText("王美婆", 54, 82)
+    ctx.fillText("王美婆会员", 54, 82)
     ctx.font = "500 22px sans-serif"
     ctx.fillText("认真介绍 · 真诚相看", 54, 118)
 
@@ -642,7 +643,7 @@ Page({
     ctx.fillStyle = "#8a7463"
     ctx.font = "700 23px sans-serif"
     ctx.fillText("性格", 88, cardY + 186)
-    ctx.fillText("择偶要求", 88, cardY + 262)
+    ctx.fillText("备注要求", 88, cardY + 262)
 
     ctx.fillStyle = "#2f241f"
     ctx.font = "500 25px sans-serif"

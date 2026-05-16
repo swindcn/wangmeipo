@@ -95,7 +95,7 @@
       <textarea class="summary-textarea two-line-textarea" value="{{form.familyBackground}}" data-field="familyBackground" bindinput="handleFieldInput" placeholder="暂无" />
     </view>
     <view class="summary-row two-line-row">
-      <view class="summary-label">择偶要求：</view>
+      <view class="summary-label">备注要求：</view>
       <textarea class="summary-textarea two-line-textarea" value="{{form.matchRequirements}}" data-field="matchRequirements" bindinput="handleFieldInput" placeholder="暂无" />
     </view>
   </view>

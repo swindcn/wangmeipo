@@ -6,15 +6,16 @@ const {
 } = require("../../utils/api")
 
 const tabItems = [
-  { key: "home", label: "汇匹配", currentIconUrl: "../../assets/icons/tab-home.png", className: "tab-item" },
-  { key: "assistant", label: "问美媒", currentIconUrl: "../../assets/icons/tab-assistant-active.png", className: "tab-item active" },
+  { key: "home", label: "资料", currentIconUrl: "../../assets/icons/tab-home.png", className: "tab-item" },
+  { key: "assistant", label: "搜索", currentIconUrl: "../../assets/icons/tab-assistant-active.png", className: "tab-item active" },
   { key: "upload", label: "传资料", currentIconUrl: "../../assets/icons/tab-upload.png", className: "tab-item tab-upload" },
-  { key: "manage", label: "懂管理", currentIconUrl: "../../assets/icons/tab-manage.png", className: "tab-item" },
+  { key: "manage", label: "管理", currentIconUrl: "../../assets/icons/tab-manage.png", className: "tab-item" },
   { key: "mine", label: "我的", currentIconUrl: "../../assets/icons/tab-mine.png", className: "tab-item" },
 ]
 
 const SYSTEM_NICKNAMES = ["云开发管理员"]
 const CHAT_CACHE_KEY = "askMatchmakerChat"
+const LEGACY_INTRO_TEXT = "告诉我你的相亲需求，例如：长乐、25-30岁、教师或体制内、女生。我会先帮你找出可能合适的会员。"
 
 function cleanRegisterNickname(nickname) {
   const text = String(nickname || "").trim()
@@ -49,16 +50,18 @@ function uniqueCandidates(items) {
 }
 
 function buildDefaultMessages() {
-  return [
-    {
-      role: "assistant",
-      text: "告诉我你的相亲需求，例如：长乐、25-30岁、教师或体制内、女生。我会先帮你找出可能合适的会员。",
-    },
-  ]
+  return []
+}
+
+function normalizeMessages(messages) {
+  return Array.isArray(messages)
+    ? messages.filter((item) => item && item.text !== LEGACY_INTRO_TEXT)
+    : []
 }
 
 Page({
   data: {
+    navTopGap: 88,
     tabItems,
     question: "",
     pendingQuestion: "",
@@ -68,16 +71,31 @@ Page({
     candidates: [],
   },
   onLoad() {
+    this.initNavMetrics()
     this.restoreChatState()
     this.loadRemoteChatState()
+  },
+  initNavMetrics() {
+    const menuButton = wx.getMenuButtonBoundingClientRect ? wx.getMenuButtonBoundingClientRect() : null
+    const windowInfo = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync()
+    const windowWidth = windowInfo.windowWidth || 375
+    const pxToRpx = (px) => px * 750 / windowWidth
+    const topGapPx = menuButton && menuButton.bottom
+      ? menuButton.bottom + 8
+      : (windowInfo.statusBarHeight || 20) + 44
+
+    this.setData({
+      navTopGap: Math.ceil(pxToRpx(topGapPx)),
+    })
   },
   restoreChatState() {
     try {
       const cached = wx.getStorageSync(CHAT_CACHE_KEY)
       if (!cached) return
+      const messages = normalizeMessages(cached.messages)
 
       this.setData({
-        messages: Array.isArray(cached.messages) && cached.messages.length > 0 ? cached.messages : buildDefaultMessages(),
+        messages: messages.length > 0 ? messages : buildDefaultMessages(),
         candidates: Array.isArray(cached.candidates) ? cached.candidates : [],
       })
     } catch (error) {
@@ -96,8 +114,9 @@ Page({
       }
 
       const result = await loadAskMatchmakerChat()
-      const messages = Array.isArray(result.messages) && result.messages.length > 0
-        ? result.messages
+      const messages = normalizeMessages(result.messages)
+      const nextMessages = messages.length > 0
+        ? messages
         : null
       const candidates = Array.isArray(result.candidates) ? result.candidates : []
 
@@ -105,8 +124,8 @@ Page({
         return
       }
 
-      this.setData({ messages, candidates })
-      this.persistChatState({ messages, candidates }, { remote: false })
+      this.setData({ messages: nextMessages, candidates })
+      this.persistChatState({ messages: nextMessages, candidates }, { remote: false })
     } catch (error) {
       console.error(error)
     }
@@ -198,7 +217,7 @@ Page({
 
       const normalizedCandidates = candidates.map(normalizeCandidate)
       const reply = normalizedCandidates.length > 0
-        ? `${parsed.reply || `我先按“${searchKeyword}”帮你筛选。`} 找到 ${normalizedCandidates.length} 位可能匹配的会员。无法查看关键资料的会员，可以进入详情后点“想看”。`
+        ? `${parsed.reply || `我先按“${searchKeyword}”帮你筛选。`} 找到 ${normalizedCandidates.length} 位可能与搜索相关的会员。`
         : `${parsed.reply || `我先按“${searchKeyword}”帮你筛选。`} 暂时没有找到明显匹配的会员。你可以放宽年龄、地区或职业条件再试。`
       const finalMessages = nextMessages.slice(0, -1).concat({ role: "assistant", text: reply })
 

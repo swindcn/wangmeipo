@@ -1,10 +1,10 @@
 const { manageViewRequests } = require("../../utils/api")
 
 const tabItems = [
-  { key: "home", label: "汇匹配", currentIconUrl: "../../assets/icons/tab-home.png", className: "tab-item" },
-  { key: "assistant", label: "问美媒", currentIconUrl: "../../assets/icons/tab-assistant.png", className: "tab-item" },
+  { key: "home", label: "资料", currentIconUrl: "../../assets/icons/tab-home.png", className: "tab-item" },
+  { key: "assistant", label: "搜索", currentIconUrl: "../../assets/icons/tab-assistant.png", className: "tab-item" },
   { key: "upload", label: "传资料", currentIconUrl: "../../assets/icons/tab-upload.png", className: "tab-item tab-upload" },
-  { key: "manage", label: "懂管理", currentIconUrl: "../../assets/icons/tab-manage-active.png", className: "tab-item active" },
+  { key: "manage", label: "管理", currentIconUrl: "../../assets/icons/tab-manage-active.png", className: "tab-item active" },
   { key: "mine", label: "我的", currentIconUrl: "../../assets/icons/tab-mine.png", className: "tab-item" },
 ]
 

@@ -65,7 +65,7 @@
         <text class="summary-block-content">{{candidate.familyBackground || '暂无'}}</text>
       </view>
       <view class="summary-block two-line-summary">
-        <text class="summary-block-label">择偶要求：</text>
+        <text class="summary-block-label">备注要求：</text>
         <text class="summary-block-content muted">{{candidate.matchRequirements || '暂无'}}</text>
       </view>
     </view>

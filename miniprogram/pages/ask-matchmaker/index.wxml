@@ -1,8 +1,11 @@
 <view class="assistant-page">
-  <scroll-view class="chat-scroll" scroll-y>
+  <view class="assistant-nav" style="height: {{navTopGap}}rpx;">
+    <view class="assistant-nav-title">搜索</view>
+  </view>
+
+  <scroll-view class="chat-scroll" style="padding-top: {{navTopGap}}rpx;" scroll-y>
     <view class="hero">
-      <view class="hero-kicker">AI 相亲小助理</view>
-      <view class="hero-title">问美媒</view>
+      <view class="hero-kicker">AI 搜索小助理</view>
       <view class="hero-copy">用自然语言描述需求，我会先按资料库帮你筛出可能合适的会员。</view>
     </view>
 
@@ -40,7 +43,7 @@
     <textarea
       class="ask-input {{inputFocused ? 'focused' : ''}}"
       value="{{question}}"
-      placeholder="输入需求，如：长乐 25-30岁 体制内 女生"
+      placeholder="输入搜索需求"
       auto-height="{{false}}"
       cursor-spacing="24"
       show-confirm-bar="{{false}}"

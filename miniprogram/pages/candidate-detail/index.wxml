@@ -39,10 +39,10 @@
             <view class="hero-photo-wrap" bindtap="handlePreviewPhoto">
               <image wx:if="{{item.type === 'url'}}" class="hero-photo {{candidate.isPrivateLocked ? 'blurred' : ''}}" src="{{item.value}}" mode="aspectFill" />
               <view wx:else class="hero-placeholder {{candidate.isPrivateLocked ? 'blurred' : ''}}">照片 {{item.value}}</view>
-              <view class="hero-watermark">
-                <text>王美婆</text><text>王美婆</text><text>王美婆</text>
-                <text>王美婆</text><text>王美婆</text><text>王美婆</text>
-                <text>王美婆</text><text>王美婆</text><text>王美婆</text>
+              <view wx:if="{{candidate.showWatermark}}" class="hero-watermark">
+                <text>王美婆会员</text><text>王美婆会员</text><text>王美婆会员</text>
+                <text>王美婆会员</text><text>王美婆会员</text><text>王美婆会员</text>
+                <text>王美婆会员</text><text>王美婆会员</text><text>王美婆会员</text>
               </view>
               <view wx:if="{{candidate.isPrivateLocked}}" class="photo-lock">私密分享 · 照片未开放</view>
             </view>
@@ -98,7 +98,7 @@
         <text class="summary-block-content">{{candidate.familyBackground || '暂无'}}</text>
       </view>
       <view class="summary-block two-line-summary">
-        <text class="summary-block-label">择偶要求：</text>
+        <text class="summary-block-label">备注要求：</text>
         <text class="summary-block-content muted">{{candidate.matchRequirements || '暂无'}}</text>
       </view>
     </view>
@@ -175,11 +175,11 @@
         <swiper-item>
           <view class="photo-preview-item" bindtap="closePreview">
             <image class="photo-preview-image" src="{{item}}" mode="aspectFit" />
-            <view class="preview-watermark">
-              <text>王美婆</text><text>王美婆</text><text>王美婆</text>
-              <text>王美婆</text><text>王美婆</text><text>王美婆</text>
-              <text>王美婆</text><text>王美婆</text><text>王美婆</text>
-              <text>王美婆</text><text>王美婆</text><text>王美婆</text>
+            <view wx:if="{{candidate.showWatermark}}" class="preview-watermark">
+              <text>王美婆会员</text><text>王美婆会员</text><text>王美婆会员</text>
+              <text>王美婆会员</text><text>王美婆会员</text><text>王美婆会员</text>
+              <text>王美婆会员</text><text>王美婆会员</text><text>王美婆会员</text>
+              <text>王美婆会员</text><text>王美婆会员</text><text>王美婆会员</text>
             </view>
           </view>
         </swiper-item>

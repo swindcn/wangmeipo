@@ -166,6 +166,50 @@ function expandSearchToken(token) {
   return uniqueItems([normalizedToken, ...synonyms])
 }
 
+function isCjkText(value) {
+  return /^[\u4e00-\u9fa5]+$/.test(value)
+}
+
+function buildSegmentCandidates(token) {
+  const text = normalizeSearchText(token)
+  if (!isCjkText(text) || text.length < 4) {
+    return []
+  }
+
+  const candidates = []
+  if (text.length % 2 === 0) {
+    const segments = text.match(/.{2}/g) || []
+    if (segments.length > 1) candidates.push(segments)
+  }
+
+  if (text.length >= 5) {
+    candidates.push([text.slice(0, 2), text.slice(2)])
+    candidates.push([text.slice(0, 3), text.slice(3)])
+  }
+
+  return candidates
+    .map((segments) => segments.map(normalizeSearchText).filter((item) => item.length >= 2))
+    .filter((segments) => segments.length > 1)
+}
+
+function findMatchedSearchTerm(fieldText, terms) {
+  const directMatch = terms.find((term) => fieldText.includes(term))
+  if (directMatch) {
+    return directMatch
+  }
+
+  for (const term of terms) {
+    const matchedSegments = buildSegmentCandidates(term).find((segments) => (
+      segments.every((segment) => fieldText.includes(segment))
+    ))
+    if (matchedSegments) {
+      return matchedSegments.join("+")
+    }
+  }
+
+  return ""
+}
+
 function buildSearchGroups(keyword) {
   const ageCriteria = parseAgeCriteria(keyword)
   const keywordWithoutAge = removeAgeCriteriaText(keyword, ageCriteria)
@@ -215,7 +259,7 @@ function evaluateSearchCandidate(candidate, searchGroups, ageCriteria) {
         continue
       }
 
-      const matchedTerm = group.terms.find((term) => fieldText.includes(term))
+      const matchedTerm = findMatchedSearchTerm(fieldText, group.terms)
       if (!matchedTerm) {
         continue
       }
